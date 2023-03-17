@@ -86,7 +86,7 @@ You need to install dependencies by running `python -m pip install -r requiremen
 ## NOTE: Post bugfix: 
 
 Make sure your MySQL server is running, then in app.py, change the SQL credentials to match your local MySQL credentials.
-flask run --host=0.0.0.0 --port=5000
+```flask run --host=0.0.0.0 --port=5000```
 
 ## IF THIS DOESN'T WORK, ONLY THEN DO THE BELOW
 
