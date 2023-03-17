@@ -82,6 +82,14 @@ Create a virtual environment in Python. You may continue using the one you setup
 You need to install dependencies by running `python -m pip install -r requirements.txt` in the backend folder.
 
 ### Step 4: Connection to MySQL
+
+## NOTE: Post bugfix: 
+
+Make sure your MySQL server is running, then in app.py, change the SQL credentials to match your local MySQL credentials.
+flask run --host=0.0.0.0 --port=5000
+
+## IF THIS DOESN'T WORK, ONLY THEN DO THE BELOW
+
 Make sure your MySQL server is running, then in app.py, change the SQL credentials to match your local MySQL credentials. Also, uncomment the line at the app.py to run locally. **When deploying on the server, comment the line again** You should now be able to start the server by running.
 
 Once done with all this, you can run it using:
