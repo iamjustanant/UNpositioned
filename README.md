@@ -3,11 +3,9 @@
 ## Contents
 
 - [Summary](#summary)
-- [Authentication and Login](#authentication-and-login)
-- [Working with the template](#working-with-the-template)
-- [Tutorial](#tutorial)
-  - [Deploying on the server ](#deploying-on-the-server)
-  - [Running Locally](#running-locally)
+- [Deploying on the server](#deploying-on-the-server )
+- [Running Locally](#running-locally)
+- [Uploading Large Files](#uploading-large-files)
 - [MySQL functionality](#mysql-functionality)
 - [Debugging Some Basic Errors](#debugging-some-basic-errors)
 - [General comments from the author](#general-comments-from-the-author)
@@ -26,9 +24,9 @@ After you follow the steps below, you should have set up a public address dedica
 For the initial deployment, only one member of your team needs to follow the steps below.
 
 
-### Step 0: Forking this template
+### Step 0: Forking or Cloning this template
 
-- You should make a FORK of this repository on (regular) GitHub, make sure that your fork is PUBLIC.  Keep in mind that other students will be able to see your repository.
+- You should make a FORK or CLONE of this repository on (regular/your public) GitHub, make sure that your repository is PUBLIC.  Keep in mind that other students will be able to see your repository.
 
 ### Step 1: Login to the deployment dashboard
 
@@ -36,7 +34,7 @@ For the initial deployment, only one member of your team needs to follow the ste
 - When you login, ensure your dashboard has the following data filled from the image below (check the black arrows only)
   - The GitHub URL field will not be filled in for you, so you should add in the URL of your forked repository.
 
-![4300showcase infosci cornell edu_9090_ (1)](https://user-images.githubusercontent.com/55399795/223569113-e820125e-29ff-4baa-8a01-3abf22668180.png)
+![4300showcase infosci cornell edu_9090_ (2)](https://user-images.githubusercontent.com/55399795/226429682-2f8f2b31-9447-42b2-8b29-889259efc219.png)
 
 
 ### Step 2: Understanding the interface
@@ -67,7 +65,8 @@ This is not formally a requirement of P01.  This is to help you test and develop
 ### Step 1: Set up MySQL
 You will need to install MySQL. Here are two tutorials that could help you with the process:
 - For Windows users: https://blog.devart.com/how-to-install-mysql-on-windows-using-mysql-installer.html
-- For Mac users: https://www.geeksforgeeks.org/how-to-install-mysql-on-macos/
+  - Select CUSTOM installation and remove any Visual Studio dependencies
+- For Mac users: Preferably use homebrew. Your default password will be empty (""). If not, follow this https://www.geeksforgeeks.org/how-to-install-mysql-on-macos/
 - For Linux users: https://www.geeksforgeeks.org/how-to-install-mysql-on-linux/
 
 
@@ -89,14 +88,15 @@ Make sure your MySQL server is running, then in app.py, change the SQL credentia
 
 ```flask run --host=0.0.0.0 --port=5000```
 
-## IF THIS DOESN'T WORK, ONLY THEN DO THE BELOW
-
-Make sure your MySQL server is running, then in app.py, change the SQL credentials to match your local MySQL credentials. Also, uncomment the line at the app.py to run locally. **When deploying on the server, comment the line again** You should now be able to start the server by running.
-
-Once done with all this, you can run it using:
-
-```python3 app.py ``` on Macbook/Linux
-```py app.py``` on Windows
+## Uploading Large Files
+- When your dataset is ready, it should be of the form of an SQL file of 128MB or less.
+  - 128MB is negotiable, based on your dataset requirements
+  - SQL files can be exported using ```mysqldump -u root -p -d <database name> > dump.sql```
+    -  NOTE: Don't just copy paste the command and expect it to work, as it is based on your OS, path variables, installations etc. If you get stuck, feel free to post on ED, although Stackoverflow will likely have a solution anyway
+- Click "Choose file" and upload your file. Hit the upload button to send it to your project
+- The files are chunked. Any interruption either on the network or client end will require a full file re-upload so be careful
+  - In the event your file does not get consistently uploaded due to network issues or takes too long (it really shouldn't) you may request a manual upload
+- This SQL file that you upload will always replace your **init.sql** file. This means that when you build your project, this file will be automatically imported into your Database and be available to use. Remember to tweak the **app.py** file to include your new database name.
 
 ## MySQL functionality
 
