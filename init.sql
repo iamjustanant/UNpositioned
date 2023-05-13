@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS kardashiandb;
-
-USE kardashiandb;
 DROP TABLE IF EXISTS episodes;
 
 CREATE TABLE episodes(
