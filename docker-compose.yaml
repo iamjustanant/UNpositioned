@@ -7,7 +7,7 @@ services:
                 context: ./backend
                 dockerfile: Dockerfile
         ports: 
-                - 5000:5000
+                - ${TEAM_PORT}:5000
         depends_on:
                 - db
         environment:
@@ -19,7 +19,7 @@ services:
         command: flask run --host=0.0.0.0 --port=5000
     db:
         container_name: ${TEAM_NAME}_db
-        image: mysql:5.7
+        image: mysql:latest
         restart: always
         environment:
                 - MYSQL_USER=${MYSQL_ONLINE_USER}
