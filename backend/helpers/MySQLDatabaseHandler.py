@@ -11,7 +11,7 @@ class MySQLDatabaseHandler(object):
         self.MYSQL_USER = "admin" if MySQLDatabaseHandler.IS_DOCKER else MYSQL_USER
         self.MYSQL_USER_PASSWORD = "admin" if MySQLDatabaseHandler.IS_DOCKER else MYSQL_USER_PASSWORD
         self.MYSQL_PORT = 3306 if MySQLDatabaseHandler.IS_DOCKER else MYSQL_PORT
-        self.MYSQL_DATABASE = "4300_DATABASE" if MySQLDatabaseHandler.IS_DOCKER else MYSQL_DATABASE
+        self.MYSQL_DATABASE = "kardashiandb" if MySQLDatabaseHandler.IS_DOCKER else MYSQL_DATABASE
         self.engine = self.validate_connection()
 
     def validate_connection(self):
