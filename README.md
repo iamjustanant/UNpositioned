@@ -127,7 +127,6 @@ Make sure your MySQL server is running, then in app.py, change the SQL credentia
 - If data isn't important, destroying and then cloning and re-building containers will usually fix the issue (assuming there's no logical error)
 
 ## General comments from the author
-### Mayank/ms3293
 
 - Since this project was made in the span of a few weeks, it is very likely things will break from time to time. If things break, you can send an email through the course email or post to ED first.
 - If you would like to see stuff added to the dashboard you can send an email through the course email and prefix the title with FEATURE REQUEST
