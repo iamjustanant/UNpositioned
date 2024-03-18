@@ -1,46 +1,65 @@
 import json
 import os
-from flask import Flask, render_template, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
+from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
+from routes.DocSearchUN import doc_search_un_handler
+from routes.DocSearchX import doc_search_x_handler
+from routes.Summarize import summarize_handler
+from lib.Utils import parseBool, parseInt
 
-# ROOT_PATH for linking with all your files. 
-# Feel free to use a config.py or settings.py with a global export variable
+# BEGIN INITIAL SETUP ----------------------------------------------------------
+
+# ROOT_PATH for linking with all files
 os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 
-# These are the DB credentials for your OWN MySQL
-# Don't worry about the deployment credentials, those are fixed
-# You can use a different DB name if you want to
+# Define DB connection parameters
 LOCAL_MYSQL_USER = "root"
 LOCAL_MYSQL_USER_PASSWORD = "admin"
 LOCAL_MYSQL_PORT = 3306
-LOCAL_MYSQL_DATABASE = "kardashiandb"
-
+LOCAL_MYSQL_DATABASE = "ourdb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
-
-# Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
 mysql_engine.load_file_into_db()
 
+# Create the Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Sample search, the LIKE operator in this case is hard-coded, 
-# but if you decide to use SQLAlchemy ORM framework, 
-# there's a much better and cleaner way to do this
-def sql_search(episode):
-    query_sql = f"""SELECT * FROM episodes WHERE LOWER( title ) LIKE '%%{episode.lower()}%%' limit 10"""
-    keys = ["id","title","descr"]
-    data = mysql_engine.query_selector(query_sql)
-    return json.dumps([dict(zip(keys,i)) for i in data])
+# BEGIN FRONTEND ROUTES --------------------------------------------------------
 
+# Path for our main Svelte page
 @app.route("/")
-def home():
-    return render_template('base.html',title="sample html")
+def base():
+    return send_from_directory('client/dist', 'index.html')
 
-@app.route("/episodes")
-def episodes_search():
-    text = request.args.get("title")
-    return sql_search(text)
+# Path for all the static files (compiled JS/CSS, etc.)
+@app.route("/<path:path>")
+def home(path):
+    return send_from_directory('client/dist', path)
+
+
+# BEGIN BACKEND ROUTES ---------------------------------------------------------
+
+@app.route("/api/doc-search-un")
+def doc_search_un():
+    text = request.args.get("text") # string
+    limit = parseInt(request.args.get("limit")) # int, optional
+    agree = parseBool(request.args.get("agree")) # boolean, optional
+    return json.dumps(doc_search_un_handler(mysql_engine,text,limit,agree))
+
+@app.route("/api/doc-search-x")
+def doc_search_x():
+    text = request.args.get("text") # string
+    limit = parseInt(request.args.get("limit")) # int, optional
+    agree = parseBool(request.args.get("agree")) # boolean, optional
+    return json.dumps(doc_search_x_handler(mysql_engine,text,limit,agree))
+
+@app.route("/api/summarize")
+def summarize():
+    text = request.args.get("text")
+    return json.dumps(summarize_handler(mysql_engine,text))
+
+# RUN APP ----------------------------------------------------------------------
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5000)
