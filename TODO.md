@@ -2,16 +2,15 @@
 
 ## Notes (EVERYONE READ)
 
-1. I put our datasets in `datasets`. I might be missing some -- if so, add them if you want.
-
-2. I made a `Makefile`. Now, running the server should be as simple as `make dev`. You should see the project frontend.
+1. I made a `Makefile`. Now, running the server should be as simple as `make dev`. You should see the project frontend.
    a. If the frontend is ever out of date, run `make client-build` to rebuild it, and then run `make dev` again.
    b. If you don't have `make`, you'll need to install it (via [brew](https://formulae.brew.sh/formula/make) on Mac, or via this [guide](https://medium.com/@samsorrahman/how-to-run-a-makefile-in-windows-b4d115d7c516) for Windows).
    c. If you run Windows, it might be easier actually to just copy-paste the commands in the `Makefile` into your terminal. Fucking Windows.
+   d. This won't work until _at least Phase 2 is complete_ because y'all need to fill in the function definitions or else Python will complain.
 
-3. You'll want to create a database called `ourdb` in MySQL Workbench. You don't have to put any tables in it for now.
+2. You'll want to create a database called `ourdb` in MySQL Workbench. You don't have to put any tables in it for now.
 
-4. In general, should you want to run SQL, it'll look something like this:
+3. In general, should you want to run SQL, it'll look something like this:
    `data = mysql_engine.query_selector(query)` where `query` is your SQL query string.
 
 ## Phase 1: DUE TUES 3/19 11:59PM
