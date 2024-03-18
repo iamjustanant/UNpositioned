@@ -16,7 +16,7 @@
 
 ## Phase 1: DUE TUES 3/19 11:59PM
 
-**Assigned to: @Juan?? idk**
+**Assigned to: [ONE PERSON: Juan, Bing, or Ant]**
 
 Create a SQL file that creates a table for each of our data-sets, and inserts all the data. I don't really care how it's done.
 
@@ -28,7 +28,7 @@ Then, see Item 3 in **Introduction**.
 
 ## Phase 2: DUE SATURDAY 3/22 11:59PM
 
-**Assigned to: @Ant ??, @Bing ?? idk**
+**Assigned to: [TWO REMAINING PEOPLE]**
 
 Person 1: complete the TODO in `backend/routes/DocSearchUN.py`.
 Person 2: complete the TODO in `backend/routes/DocSearchX.py`.
