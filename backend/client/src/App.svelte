@@ -69,7 +69,7 @@ p {
   margin-bottom: 20px;
 }
 
-.column-layout {
+:global(.column-layout) {
   display: flex;
   flex: 1 1 0px;
   flex-direction: row;
@@ -88,5 +88,13 @@ p {
     flex-grow: 1;
     font-family: Helvetica, sans-serif;
     color: #333;
+}
+
+:global(.row-layout) {
+  display: flex;
+  flex: 1 1 0px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: end;
 }
 </style>

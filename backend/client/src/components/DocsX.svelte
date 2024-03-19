@@ -1,6 +1,7 @@
 
 <script lang="ts">
   import { buildURL } from '../lib/util';
+    import LimitSelector from './primitives/LimitSelector.svelte';
 
   export let text: string;
 
@@ -15,7 +16,10 @@
 </script>
 
 <div class='col-child'>
-  <h2>Relevant X Tweets</h2>
+  <div class='row-layout'>
+    <h2>Relevant X Tweets</h2>
+    <LimitSelector onSelectionChange={(value) => limit = value} />
+  </div>
 
   {#await promise}
     <p>loading...</p>
