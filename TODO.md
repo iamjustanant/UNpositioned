@@ -80,4 +80,6 @@ _NOTE_: Anytime I reference **dark magic**, I'm saying this is a great place to 
 
     Once done, we should be able to remove the other routes (i.e. `DocSearchUN.py`, `DocSearchX.py`), as they'll be redundant.
 
+4. Modify frontend to match.
+
 If this doesn't meet TA requirements, we could uh, store lots more metadata in each of the tables. Maybe who they agree with, how impactful the message was, idk. This would let us do a lot more **dark magic** precomputing and querying.
