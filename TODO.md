@@ -9,18 +9,21 @@
 2. In general, should you want to run SQL, it'll look something like this:
    `data = mysql_engine.query_selector(query)` where `query` is your SQL query string.
 
-## Phase 1: DUE TUES 3/19 11:59PM
+## Phase 1: DUE WEDNESDAY 3/19 11:59PM
 
 **Assigned to: [ONE PERSON: Juan, Bing, or Ant]**
 
 Complete the TODO in `init.sql`.
 
-## Phase 2: DUE SATURDAY 3/22 11:59PM
+## Phase 2: DUE SUNDAY 3/22 11:59PM
 
 **Assigned to: [TWO REMAINING PEOPLE]**
 
 Person 1: complete the TODO in `backend/routes/DocSearchUN.py`.
 Person 2: complete the TODO in `backend/routes/DocSearchX.py`.
+
+For both, I have an honestly kinda-working naive implementation already there.
+Go do your data-science dark magic to make it better, idk.
 
 ## Phase 3: DUE TUES 3/26 11:59PM
 
