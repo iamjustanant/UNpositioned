@@ -32,7 +32,6 @@ CREATE TABLE topics (
 CREATE TABLE rel_x_topics (
     x_id INT,                           -- The id of the tweet
     topic_id INT,                       -- The id of the topic
-    agreement FLOAT,                    -- The agreement score between the tweet and the topic, between 0 and 1 (1 indicating agreement, 0 indicating opposition)
     relevancy FLOAT,                    -- The relevancy score between the tweet and the topic, between 0 and 1 (1 indicating high relevancy, 0 indicating low relevancy)
     PRIMARY KEY (x_id, topic_id)
 );
@@ -41,7 +40,6 @@ CREATE TABLE rel_x_topics (
 CREATE TABLE rel_un_topics (
     un_id INT,                          -- The id of the news
     topic_id INT,                       -- The id of the topic
-    agreement FLOAT,                    -- The agreement score between the news and the topic, between 0 and 1 (1 indicating agreement, 0 indicating opposition)
     relevancy FLOAT,                    -- The relevancy score between the news and the topic, between 0 and 1 (1 indicating high relevancy, 0 indicating low relevancy)
     PRIMARY KEY (un_id, topic_id)
 );

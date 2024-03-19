@@ -4,7 +4,6 @@ from flask_cors import CORS
 from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
 from routes.DocSearchUN import doc_search_un_handler
 from routes.DocSearchX import doc_search_x_handler
-from routes.Summarize import summarize_handler
 from lib.Utils import formatServerResponse, parseBool, parseInt
 
 # BEGIN INITIAL SETUP ----------------------------------------------------------
@@ -44,12 +43,6 @@ def doc_search_x():
     text = request.args.get("text") # string
     limit = parseInt(request.args.get("limit")) # int, optional
     return formatServerResponse(doc_search_x_handler(mysql_engine,text,limit))
-
-# Serve backend endpoint to summarize text
-@app.route("/api/summarize")
-def summarize():
-    text = request.args.get("text")
-    return formatServerResponse(summarize_handler(mysql_engine,text))
 
 # Serve all remaining files from the frontend
 @app.route("/<path:path>")
