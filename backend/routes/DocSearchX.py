@@ -6,11 +6,11 @@
 
 def doc_search_x_handler(sql_engine,text,limit):
   # Naive implementation here for now
-  my_sql_query = "SELECT * FROM x_docs";
+  my_sql_query = "SELECT * FROM x_docs"
   if text:
-    my_sql_query += " WHERE text_content LIKE '%" + text + "%'";
+    my_sql_query += " WHERE text_content LIKE '%" + text + "%'"
   if limit:
-    my_sql_query += " LIMIT " + str(limit);
+    my_sql_query += " LIMIT " + str(limit)
   my_sql_query += ";"
 
   data = sql_engine.query_selector(my_sql_query)

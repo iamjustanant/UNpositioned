@@ -3,6 +3,7 @@ from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
 from routes.DocSearchUN import doc_search_un_handler
+from routes.DocSearchRep import doc_search_rep_handler
 from routes.DocSearchX import doc_search_x_handler
 from lib.Utils import formatServerResponse, parseBool, parseInt
 
@@ -18,6 +19,7 @@ LOCAL_MYSQL_PORT = 3306
 LOCAL_MYSQL_DATABASE = "kardashiandb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
 mysql_engine.load_file_into_db()
+mysql_engine.init_data()
 
 # Create the Flask app
 app = Flask(__name__)
@@ -43,6 +45,13 @@ def doc_search_x():
     text = request.args.get("text") # string
     limit = parseInt(request.args.get("limit")) # int, optional
     return formatServerResponse(doc_search_x_handler(mysql_engine,text,limit))
+
+# Serve backend endpoint to search Senator documents
+@app.route("/api/searchrep")
+def doc_search_rep():
+    text = request.args.get("text") # string
+    limit = parseInt(request.args.get("limit")) # int, optional
+    return formatServerResponse(doc_search_rep_handler(mysql_engine,text,limit))
 
 # Serve all remaining files from the frontend
 @app.route("/<path:path>")
