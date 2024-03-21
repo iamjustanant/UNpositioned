@@ -2,6 +2,7 @@
   import DocsUn from "./components/DocsUN.svelte";
   import DocsX from "./components/DocsX.svelte";
   import { debounce } from '$lib/util';
+    import DocsRep from "./components/DocsRep.svelte";
 
   let text = '';
 
@@ -21,6 +22,7 @@
 
   <div class='column-layout'>
     <DocsUn text={text} />
+    <DocsRep text={text} />
     <DocsX text={text} />
   </div>
 

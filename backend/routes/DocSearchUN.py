@@ -6,9 +6,9 @@
 
 def doc_search_un_handler(sql_engine,text,limit):
   # Naive implementation here for now
-  my_sql_query = "SELECT * FROM un_docs";
+  my_sql_query = "SELECT * FROM un_docs"
   if text:
-    my_sql_query += " WHERE text_content LIKE '%" + text + "%'";
+    my_sql_query += " WHERE text_content LIKE '%" + text + "%'"
   if limit:
     my_sql_query += " LIMIT " + str(limit)
   my_sql_query += ";"
