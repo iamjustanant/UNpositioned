@@ -48,7 +48,7 @@ class MySQLDatabaseHandler(object):
     def init_data(self):
         data_files = ["un_import.sql", "rep_import.sql", "x_import.sql"]
         for raw_file in data_files:
-            raw_file_path = os.path.join(os.environ['ROOT_PATH'],raw_file)
+            raw_file_path = os.path.join(os.environ['ROOT_PATH'],"www",raw_file)
             sql_file = open(raw_file_path, "r")
             sql_file_data = list(filter(lambda x:x != '', sql_file.read().split(";\n")))
             for line in sql_file_data:
