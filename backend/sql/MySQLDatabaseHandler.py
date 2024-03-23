@@ -45,18 +45,3 @@ class MySQLDatabaseHandler(object):
         self.query_executor(sql_file_data)
         sql_file.close()
 
-    def init_data(self):
-        data_files = ["un_import.sql", "rep_import.sql", "x_import.sql"]
-        for raw_file in data_files:
-            raw_file_path = os.path.join(os.environ['ROOT_PATH'],raw_file)
-            sql_file = open(raw_file_path, "r",encoding='utf-8')
-            sql_file_data = list(filter(lambda x:x != '', sql_file.read().split(";\n")))
-            for line in sql_file_data:
-                try:
-                    self.query_executor(line)
-                except Exception as e:
-                    print("FAILURE ON " + line + " IN FILE " + raw_file)
-                    print(e)
-                    return
-            sql_file.close()
-
