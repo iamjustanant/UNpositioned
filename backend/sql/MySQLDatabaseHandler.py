@@ -37,7 +37,7 @@ class MySQLDatabaseHandler(object):
 
     def load_file_into_db(self,file_path  = None):
         if file_path is None:
-            file_path = os.path.join(os.environ['ROOT_PATH'],'www','init.sql')
+            file_path = os.path.join(os.environ['ROOT_PATH'],'init.sql')
         sql_file = open(file_path,"r",encoding='utf-8')
         sql_file_data = list(filter(lambda x:x != '',sql_file.read().split(";\n")))
         self.query_executor(sql_file_data)
