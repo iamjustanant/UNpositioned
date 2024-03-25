@@ -18,7 +18,7 @@ make dev # Start the server
 ## Running Locally, with Docker
 
 ```bash
-docker-compose up
+TEAM_NAME=teamname APP_PORT=5175 docker-compose up
 ```
 
 ## Project Structure

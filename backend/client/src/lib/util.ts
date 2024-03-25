@@ -11,7 +11,7 @@ export const buildURL = (
             return "";
         }
         // remove leading and trailing whitespaces, replace spaces with %20, and encodeURI
-        return encodeURI(query.toString().trim().replace(/ /g, "%20"));
+        return encodeURI(query.toString().trim().replace(/ /g, "+"));
     };
 
     const removeTrailingSlash = (url: string): string => {

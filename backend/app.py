@@ -5,7 +5,7 @@ from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
 from routes.DocSearchUN import doc_search_un_handler
 from routes.DocSearchRep import doc_search_rep_handler
 from routes.DocSearchX import doc_search_x_handler
-from lib.Utils import formatServerResponse, parseBool, parseInt
+from lib.Utils import formatServerResponse, parseArg, parseBool, parseInt
 
 # BEGIN INITIAL SETUP ----------------------------------------------------------
 
@@ -34,21 +34,21 @@ def base():
 # Serve backend endpoint to search UN documents
 @app.route("/api/searchun")
 def doc_search_un():
-    text = request.args.get("text") # string
+    text = parseArg(request.args.get("text"))
     limit = parseInt(request.args.get("limit")) # int, optional
     return formatServerResponse(doc_search_un_handler(mysql_engine,text,limit))
 
 # Serve backend endpoint to search X documents
 @app.route("/api/searchx")
 def doc_search_x():
-    text = request.args.get("text") # string
+    text = parseArg(request.args.get("text").replace("+"," "))
     limit = parseInt(request.args.get("limit")) # int, optional
     return formatServerResponse(doc_search_x_handler(mysql_engine,text,limit))
 
 # Serve backend endpoint to search Senator documents
 @app.route("/api/searchrep")
 def doc_search_rep():
-    text = request.args.get("text") # string
+    text = parseArg(request.args.get("text").replace("+"," "))
     limit = parseInt(request.args.get("limit")) # int, optional
     return formatServerResponse(doc_search_rep_handler(mysql_engine,text,limit))
 

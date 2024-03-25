@@ -1,7 +1,7 @@
 
 <script lang="ts">
   import { buildURL } from '../lib/util';
-    import LimitSelector from './primitives/LimitSelector.svelte';
+  import LimitSelector from './primitives/LimitSelector.svelte';
 
   export let text: string;
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import DocsUn from "./components/DocsUN.svelte";
   import DocsX from "./components/DocsX.svelte";
+  import DocsRep from "./components/DocsRep.svelte";
   import { debounce } from '$lib/util';
-    import DocsRep from "./components/DocsRep.svelte";
 
   let text = '';
 
