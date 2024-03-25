@@ -10,6 +10,9 @@ def parseInt(v):
       return None
   return int(v)
 
+def parseArg(str):
+  return str.replace("+"," ")
+
 def formatServerResponse(data):
   try:
       formatted_data = [list(row) if isinstance(row, tuple) else row for row in data]
