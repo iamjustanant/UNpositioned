@@ -4,6 +4,10 @@ import re
 import json
 import os
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
+import nltk
+nltk.download('stopwords')
+
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
 from scipy.spatial import distance
