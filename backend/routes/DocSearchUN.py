@@ -7,8 +7,6 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 from lib.Text_Processing_Utils import table
-from lib.Text_Processing_Utils import smart_cosdist
-
 
 def doc_search_un_handler(sql_engine,text,limit):
 
@@ -16,10 +14,8 @@ def doc_search_un_handler(sql_engine,text,limit):
     global un_table
     un_table = table(sql_engine,'un_docs')
 
-  query_vector = un_table.vectorizer.transform([str(text),]).toarray()
-
-  if np.array_equal(query_vector, np.zeros(shape = query_vector.shape)):
-      return ['NO FILES FOUND',]
+  results = un_table.svd_cossim(text,k=30)
+  if results is not None:
+    return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values,np.sort(results)[::-1])
   else:
-    results = smart_cosdist(matrix = un_table.matrix.toarray(), query_vec = query_vector)
-    return un_table.df['text_content'].iloc[np.argsort(results)][:limit]
+    return ['Enter a Phrase...',]
