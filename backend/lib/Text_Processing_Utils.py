@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import json
 import os
+import pickle
 
 # Objectives for search:
 # Search entire phrases smartly
@@ -42,25 +43,32 @@ def smart_cosdist(matrix:np.ndarray,query_vec:np.ndarray) -> np.ndarray:
 class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
-    def __init__(self, sql_engine, table_name:str,min_df:float=0.0001,max_df:float=0.99):
+    def __init__(self, sql_engine, table_name:str,min_df:float=0.0001,max_df:float=0.99, k = 30):
         self.df = fetch_table(sql_engine,table_name)
-
+        self.stopwords_set = set(stopwords.words('english'))
         self.ps = PorterStemmer()
 
-        #stem and tokenize
-        self.stopwords_set = set(stopwords.words('english'))
-        self.vectorizer = TfidfVectorizer(
-        min_df=min_df,
-        max_df=max_df,
-        tokenizer=self.tokenize_stem_words
-        )
-        self.vectorizer = self.vectorizer.fit(self.df['text_content'])
+        if os.path.isfile(table_name+'_data.pickle'):
+            with open(table_name+'_data.pickle','rb') as file:
+                self.vectorizer, self.matrix, self.svd_u, self.svd_s, self.svd_vt = pickle.load(file)
+        else:
+            self.vectorizer = TfidfVectorizer(
+            min_df=min_df,
+            max_df=max_df,
+            tokenizer=self.tokenize_stem_words
+            )
+            self.vectorizer = self.vectorizer.fit(self.df['text_content'])
 
-        self.matrix = self.vectorizer.transform(self.df['text_content'])
-        self.matrix = normalize(self.matrix, axis = 1)
+            self.matrix = self.vectorizer.transform(self.df['text_content'])
+            self.matrix = normalize(self.matrix, axis = 1)
+            
+            self.svd_u, self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
 
+            with open(table_name+'_data.pickle','wb') as file:
+                pickle.dump((self.vectorizer, self.matrix, self.svd_u, self.svd_s, self.svd_vt), file)
 
     def phrase_tokenizer(self, words:str):
+        raise NotImplementedError
         token_corr = np.corrcoef(self.matrix,rowvar=False)
 
         tokens = re.findall(r"[a-z]{2,}",words.lower())
@@ -77,7 +85,8 @@ class table:
                     index += 1
         return phrase_tokens
                     
-    def suggest_phrases(self, query:str):
+    def suggest_phrases(self, query:str): 
+        raise NotImplementedError
         query_vec = self.vectorizer.transform([str(query),]).toarray()
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
             return None
@@ -90,15 +99,11 @@ class table:
         tokens = re.findall(r"[a-z]{2,}",words.lower())
         return [self.ps.stem(token) for token in tokens if token not in self.stopwords_set]        
     
-    def svd_cossim(self, query:str,k=20, boolean_incentive = 0.2) -> np.ndarray:
+    def svd_cossim(self, query:str, boolean_incentive = 0.2) -> np.ndarray:
         #vectorize query:
         query_vec = self.vectorizer.transform([str(query),]).toarray()
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
             return None
-
-        #initialize svd matrix if needed
-        if not all(hasattr(self, attribute) for attribute in ['svd_u','svd_s','svd_vt']):
-            self.svd_u, self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
 
         # Returns an array, where array[n] represents the cosine similarity of the nth document
         svd_vec = normalize(np.dot(query_vec, self.svd_vt.T)).squeeze()

@@ -12,9 +12,9 @@ def doc_search_un_handler(sql_engine,text,limit):
 
   if not 'un_table' in globals():
     global un_table
-    un_table = table(sql_engine,'un_docs')
+    un_table = table(sql_engine,'un_docs',k=30)
 
-  results = un_table.svd_cossim(text,k=30)
+  results = un_table.svd_cossim(text)
   if results is not None:
     return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values,np.sort(results)[::-1])
   else:
