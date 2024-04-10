@@ -14,7 +14,9 @@ from scipy.sparse import linalg
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import nltk
-nltk.download('stopwords')
+
+# nltk.download('stopwords')
+
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
 from scipy.spatial import distance
@@ -24,7 +26,9 @@ def fetch_table(sql_engine, table_name:str):
     df = pd.DataFrame(data.fetchall())
     df.columns = data.keys()
     return df
-"""
+
+# old cossim
+
 def smart_cosdist(matrix:np.ndarray,query_vec:np.ndarray) -> np.ndarray:
     # Returns an array, where array[n] represents the cosine similarity of the nth document
 
@@ -39,10 +43,12 @@ def smart_cosdist(matrix:np.ndarray,query_vec:np.ndarray) -> np.ndarray:
     return np.array([distance.cosine(matrix[doc_index],query_vec) 
                      if not np.all(matrix[doc_index,:] == 0) else np.inf 
                      for doc_index in range(0,matrix.shape[0])])
-"""
+
+
 class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
+
     def __init__(self, sql_engine, table_name:str,min_df:float=0.0001,max_df:float=0.99, k = 30):
         self.df = fetch_table(sql_engine,table_name)
         self.stopwords_set = set(stopwords.words('english'))
@@ -99,6 +105,8 @@ class table:
         tokens = re.findall(r"[a-z]{2,}",words.lower())
         return [self.ps.stem(token) for token in tokens if token not in self.stopwords_set]        
     
+
+    # MAIN ALGORITHM
     def svd_cossim(self, query:str, boolean_incentive = 0.2) -> np.ndarray:
         #vectorize query:
         query_vec = self.vectorizer.transform([str(query),]).toarray()
