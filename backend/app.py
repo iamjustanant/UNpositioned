@@ -18,7 +18,9 @@ LOCAL_MYSQL_USER_PASSWORD = "admin"
 LOCAL_MYSQL_PORT = 3306
 LOCAL_MYSQL_DATABASE = "kardashiandb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
-mysql_engine.load_file_into_db()
+
+# load data
+# mysql_engine.load_file_into_db()
 
 # Create the Flask app
 app = Flask(__name__)
