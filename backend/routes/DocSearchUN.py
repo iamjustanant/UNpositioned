@@ -3,23 +3,39 @@
 # - an optional limit parameter (int) to limit the number of results, defaulting to 10
 # The function should return the most relevant UN positions.
 # Of course, the first parameter provided is the SQL Engine itself, which lets you execute SQL queries on the database.
+
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 from lib.Text_Processing_Utils import table
-from lib.Text_Processing_Utils import smart_cosdist
+import pycountry
 
+def country_map(alpha_3):
+    try:
+        country = pycountry.countries.get(alpha_3=alpha_3)
+        return country.name
+    except AttributeError:
+        return 'Unknown country'
 
 def doc_search_un_handler(sql_engine,text,limit):
 
   if not 'un_table' in globals():
     global un_table
-    un_table = table(sql_engine,'un_docs')
+    un_table = table(sql_engine,'un_docs',k=30)
+    
+  results = un_table.svd_cossim(text)
 
-  query_vector = un_table.vectorizer.transform([str(text),]).toarray()
+  if results is not None:
+    """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
+               np.sort(results)[::-1][:limit])"""
+    
+    # Formatted output
+    ttic = [
+       f"In {year}, {country_map(country).upper()} said: {tc}" 
+       for country, year, tc in un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values
+    ]
 
-  if np.array_equal(query_vector, np.zeros(shape = query_vector.shape)):
-      return ['NO FILES FOUND',]
+    return ttic
+  
   else:
-    results = smart_cosdist(matrix = un_table.matrix.toarray(), query_vec = query_vector)
-    return un_table.df['text_content'].iloc[np.argsort(results)][:limit]
+    return ['No relevant results found :(',]
