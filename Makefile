@@ -6,3 +6,6 @@ client-dev:
 
 client-build:
 	cd backend/client && npm install && npm run build
+
+server-install:
+	cd backend && pip install -r requirements.txt
