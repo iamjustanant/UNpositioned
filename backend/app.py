@@ -1,10 +1,10 @@
 import os
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-from backend.routes.DocGetHandler import doc_get_handler
-from backend.routes.DocPreviewHandler import doc_preview_handler
-from backend.routes.DocSearchHandler import doc_search_handler
-from backend.routes.TermSearchHandler import term_search_handler
+from routes.DocGetHandler import doc_get_handler
+from routes.DocPreviewHandler import doc_preview_handler
+from routes.DocSearchHandler import doc_search_handler
+from routes.TermSearchHandler import term_search_handler
 from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
 from lib.Utils import formatServerResponse, parseArg, parseBool, parseInt
 
