@@ -15,7 +15,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import nltk
 
-# nltk.download('stopwords')
+nltk.download('stopwords')
 
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
