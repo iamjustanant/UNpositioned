@@ -1,10 +1,11 @@
 import os
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
+from backend.routes.DocGetHandler import doc_get_handler
+from backend.routes.DocPreviewHandler import doc_preview_handler
+from backend.routes.DocSearchHandler import doc_search_handler
+from backend.routes.TermSearchHandler import term_search_handler
 from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
-from routes.DocSearchUN import doc_search_un_handler
-from routes.DocSearchRep import doc_search_rep_handler
-from routes.DocSearchX import doc_search_x_handler
 from lib.Utils import formatServerResponse, parseArg, parseBool, parseInt
 
 # BEGIN INITIAL SETUP ----------------------------------------------------------
@@ -33,26 +34,33 @@ CORS(app)
 def base():
     return send_from_directory('client/dist', 'index.html')
 
-# Serve backend endpoint to search UN documents
-@app.route("/api/searchun")
-def doc_search_un():
-    text = parseArg(request.args.get("text"))
-    limit = parseInt(request.args.get("limit")) # int, optional
-    return formatServerResponse(doc_search_un_handler(mysql_engine,text,limit))
+# Serve endpoints
+@app.route("/api/termsearch")
+def termsearch():
+    queryStr = parseArg(request.args.get("text").replace("+"," "))
+    desiredType = parseArg(request.args.get("type"))
+    limit = parseInt(request.args.get("limit"))
+    return formatServerResponse(term_search_handler(mysql_engine,queryStr,desiredType,limit))
 
-# Serve backend endpoint to search X documents
-@app.route("/api/searchx")
-def doc_search_x():
-    text = parseArg(request.args.get("text").replace("+"," "))
-    limit = parseInt(request.args.get("limit")) # int, optional
-    return formatServerResponse(doc_search_x_handler(mysql_engine,text,limit))
+@app.route("/api/docsearch")
+def docsearch():
+    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocType = parseArg(request.args.get("doc_type"))
+    desiredType = parseArg(request.args.get("type"))
+    limit = parseInt(request.args.get("limit"))
+    return formatServerResponse(doc_search_handler(mysql_engine,queryDocID,queryDocType,desiredType,limit))
 
-# Serve backend endpoint to search Senator documents
-@app.route("/api/searchrep")
+@app.route("/api/getdocpreview")
+def docpreview():
+    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocType = parseArg(request.args.get("doc_type"))
+    return formatServerResponse(doc_preview_handler(mysql_engine,queryDocID,queryDocType))
+
+@app.route("/api/getdoc")
 def doc_search_rep():
-    text = parseArg(request.args.get("text").replace("+"," "))
-    limit = parseInt(request.args.get("limit")) # int, optional
-    return formatServerResponse(doc_search_rep_handler(mysql_engine,text,limit))
+    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocType = parseArg(request.args.get("doc_type"))
+    return formatServerResponse(doc_get_handler(mysql_engine,queryDocID,queryDocType))
 
 # Serve all remaining files from the frontend
 @app.route("/<path:path>")
