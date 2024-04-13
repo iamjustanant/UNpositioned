@@ -30,9 +30,16 @@
     align-items: center;
     gap: 8px;
   }
+  
   select {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    background-color: white;
+    padding: 0.8rem;
+    background-color: #333;
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    border: none;
+    border-right: 8px solid #333;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   }
+  
 </style>
