@@ -72,6 +72,13 @@ class table:
 
             with open(table_name+'_data.pickle','wb') as file:
                 pickle.dump((self.vectorizer, self.matrix, self.svd_u, self.svd_s, self.svd_vt), file)
+    
+    def vectorize_query(query:str):
+        #TODO: Put in Spellchecker
+        #TODO: JUAN PUT vec2querry
+        raise NotImplementedError
+        query = 
+        return self.vectorizer.transform(query)
 
     def phrase_tokenizer(self, words:str):
         raise NotImplementedError
@@ -98,7 +105,6 @@ class table:
             return None
         
         self.count_vectorizor = CountVectorizer(min_df=10, tokenizer = self.phrase_tokenizer)
-
         
     def tokenize_stem_words(self,words:str): # CAN BE MORE EFFICIENT
         ## takes a string and converts it into a list of stemmed words

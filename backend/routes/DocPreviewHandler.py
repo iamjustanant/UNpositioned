@@ -5,9 +5,11 @@ def doc_preview_handler(sql_engine,queryDocID,queryDocType):
     return row['text_content']
   elif queryDocType == 'X':
     row = x_table.df.loc[queryDocID]
-    return x_table.df.loc[queryDocID]['text_content']
+    return row['text_content']
   elif queryDocType == 'Rep':
     row = rep_table.df.loc[queryDocID]
-    return rep_table.df.loc[queryDocID]['text_content']
+    return row['text_content']
   else:
     return None
+  
+  #TODO: properly format responses
