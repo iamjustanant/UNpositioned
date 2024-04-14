@@ -20,7 +20,7 @@ LOCAL_MYSQL_DATABASE = "kardashiandb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
 
 # load data
-# mysql_engine.load_file_into_db()
+mysql_engine.load_file_into_db()
 
 # Create the Flask app
 app = Flask(__name__)
