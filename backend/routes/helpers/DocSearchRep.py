@@ -7,17 +7,26 @@
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-from lib.Text_Processing_Utils import table
 from lib.Text_Processing_Utils import smart_cosdist
 
-
 def doc_search_rep_handler(sql_engine,text,limit):
+  from lib.Text_Processing_Utils import rep_table
+  results = rep_table.svd_cossim(text)
 
-  if not 'rep_table' in globals():
-    global rep_table
-    rep_table = table(sql_engine,'rep_docs')
+  if results is not None:
+    """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
+               np.sort(results)[::-1][:limit])"""
+    
+    # Formatted output
+    ttic = [
+       f"{author} said on {ms.upper()}: {tc}" 
+       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[np.argsort(results)][::-1][:limit].values
+    ]
 
-  query_vector = rep_table.vectorizer.transform([str(text),]).toarray()
+    return ttic
+  
+  else:
+    return ['No relevant results found :(',]
 
   if np.array_equal(query_vector, np.zeros(shape = query_vector.shape)):
       return ['No relevant results found :(',]

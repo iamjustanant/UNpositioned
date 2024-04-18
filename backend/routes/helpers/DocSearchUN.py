@@ -7,7 +7,6 @@
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-from lib.Text_Processing_Utils import table
 import pycountry
 
 def country_map(alpha_3):
@@ -18,10 +17,8 @@ def country_map(alpha_3):
         return 'Unknown country'
 
 def doc_search_un_handler(sql_engine,text,limit):
-
-  if not 'un_table' in globals():
-    global un_table
-    un_table = table(sql_engine,'un_docs',k=100, min_df=10, max_df=6000)
+  from lib.Text_Processing_Utils import un_table
+  # 10-6000
     
   results = un_table.svd_cossim(text)
 

@@ -8,6 +8,8 @@ from routes.TermSearchHandler import term_search_handler
 from sql.MySQLDatabaseHandler import MySQLDatabaseHandler
 from lib.Utils import formatServerResponse, parseArg, parseBool, parseInt
 
+from lib.Text_Processing_Utils import init_tables
+
 # BEGIN INITIAL SETUP ----------------------------------------------------------
 
 # ROOT_PATH for linking with all files
@@ -66,6 +68,9 @@ def doc_search_rep():
 @app.route("/<path:path>")
 def home(path):
     return send_from_directory('client/dist', path)
+
+#Initialize backend
+init_tables(mysql_engine)
 
 # RUN APP ----------------------------------------------------------------------
 

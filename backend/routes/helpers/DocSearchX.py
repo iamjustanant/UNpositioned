@@ -7,19 +7,29 @@
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-from lib.Text_Processing_Utils import table
 from lib.Text_Processing_Utils import smart_cosdist
 
 
 def doc_search_x_handler(sql_engine,text,limit):
+  from lib.Text_Processing_Utils import x_table
+  results = x_table.svd_cossim(text)
 
-  if not 'x_table' in globals():
-    global x_table
-    x_table = table(sql_engine,'x_docs')
+  if results is not None:
+    """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
+               np.sort(results)[::-1][:limit])"""
+    
+    # Formatted output
+    ttic = [
+      f"{user} said: {tc}" 
+       for user, tc in x_table.df[['user_name', 'text_content']].iloc[np.argsort(results)][::-1][:limit].values
+    ]
 
-  query_vector = x_table.vectorizer.transform([str(text),]).toarray()
+    return ttic
+  
+  else:
+    return ['No relevant results found :(',]
 
-  if np.array_equal(query_vector, np.zeros(shape = query_vector.shape)):
+  if np.sum(query_vector) == 0:
       return ['No relevant results found :(',]
   else:
     results = smart_cosdist(matrix = x_table.matrix.toarray(), query_vec = query_vector)
@@ -32,3 +42,4 @@ def doc_search_x_handler(sql_engine,text,limit):
     ]
 
     return ttic
+  
