@@ -2,7 +2,7 @@ def doc_preview_handler(sql_engine,queryDocID,queryDocType):
   #TODO: Implement this function to return a PREVIEW of the document with the given ID and type (probably just the most relevant sentence)
   if queryDocType == 'UN':
     row = un_table.df.loc[queryDocID]
-    return row['text_content']
+    return row['country_name'] + ', ' + row['year'] + ': '  + row['text_content']
   elif queryDocType == 'X':
     row = x_table.df.loc[queryDocID]
     return row['text_content']
@@ -10,6 +10,6 @@ def doc_preview_handler(sql_engine,queryDocID,queryDocType):
     row = rep_table.df.loc[queryDocID]
     return row['text_content']
   else:
-    return None
+    return 'type error'
   
   #TODO: properly format responses

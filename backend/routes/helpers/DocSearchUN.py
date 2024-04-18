@@ -21,7 +21,7 @@ def doc_search_un_handler(sql_engine,text,limit):
 
   if not 'un_table' in globals():
     global un_table
-    un_table = table(sql_engine,'un_docs',k=30)
+    un_table = table(sql_engine,'un_docs',k=100, min_df=10, max_df=6000)
     
   results = un_table.svd_cossim(text)
 
