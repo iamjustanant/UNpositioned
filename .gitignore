@@ -20,3 +20,4 @@ build/
 helpers/*
 
 .python-version
+backend/lib/data_exainer_temporary.ipynb

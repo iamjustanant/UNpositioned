@@ -10,7 +10,7 @@ import pickle
 # Faster search
 
 from sklearn.preprocessing import normalize
-from scipy.sparse import linalg, csr_matrix
+from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
@@ -46,7 +46,7 @@ def fetch_table(sql_engine, table_name:str): #fetch table from SQL and process c
         df['sess'] = df['sess'].astype('int')
         df['year_created'] = df['year_created'].astype('int')
         df['country'] = df['country'].astype('str')
-        df = df[df['year_created'] >= 2000]
+        df = df[df['year_created'] >= 2007]
     return df
 
 def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT
@@ -81,20 +81,26 @@ class table:
         if os.path.isfile(table_name+'_data.pickle'):
             with open(table_name+'_data.pickle','rb') as file:
                 self.svd_u, self.svd_vt = pickle.load(file)
-            
+            print(type(self.svd_u))
+            #self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
+            #self.matrix = normalize(self.matrix, axis = 1)
         else:
-            #Initialize vectorizer
+            #Initialize tfidfmatrix
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
-
             self.matrix = normalize(self.matrix, axis = 1)
-            
-            self.svd_u,_, self.svd_vt = linalg.svds(self.matrix,k=k)
+
+            #Create and save svd matrices
+            self.svd_u,self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
             self.svd_u = self.svd_u.astype(np.float16)
             self.svd_vt = self.svd_vt.astype(np.float16)
+            self.svd_s = self.svd_s.astype(np.float16)
 
-            with open(table_name+'_data.pickle','wb') as file:
-                pickle.dump((self.svd_u, self.svd_vt), file)
-
+            with open(table_name+'_u.pickle','wb') as file:
+                pickle.dump(self.svd_u,file)
+            with open(table_name+'_s.pickle','wb') as file:
+                pickle.dump(self.svd_s,file)
+            with open(table_name+'_vt.pickle','wb') as file:
+                pickle.dump(self.svd_vt,file)
 
         #initialize global vectorizer 
     
@@ -107,11 +113,10 @@ class table:
 
     def suggest_phrases(self, query:str): 
         raise NotImplementedError
-
         query = self.tokenize_stem_words(query)
         
     # MAIN ALGORITHM
-    def svd_cossim(self, query:str, boolean_incentive = 0.5) -> np.ndarray:
+    def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
         query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
@@ -160,6 +165,6 @@ def init_tables(sql_engine):
     #un: 0.005
     #x
     #NOTE: these parameters are manually optimized
-    un_table = table(sql_engine,'un_docs',un_df,k=100)
-    x_table = table(sql_engine,'x_docs',x_df, k=200)
+    un_table = table(sql_engine,'un_docs',un_df,k=150)
+    x_table = table(sql_engine,'x_docs',x_df, k=150)
     rep_table = table(sql_engine,'rep_docs',rep_df, k=200)
