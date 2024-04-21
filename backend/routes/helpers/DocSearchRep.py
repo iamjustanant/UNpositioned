@@ -7,7 +7,7 @@
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-from lib.Text_Processing_Utils import smart_cosdist
+from lib.Utils import sparse_argsort
 
 def doc_search_rep_handler(sql_engine,text,limit):
   from lib.Text_Processing_Utils import rep_table
@@ -20,7 +20,7 @@ def doc_search_rep_handler(sql_engine,text,limit):
     # Formatted output
     ttic = [
        f"{author} said on {ms.upper()}: {tc}" 
-       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[np.argsort(results)][::-1][:limit].values
+       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[sparse_argsort(results)][::-1][:limit].values
     ]
 
     return ttic

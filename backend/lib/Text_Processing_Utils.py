@@ -12,7 +12,7 @@ import pickle
 from sklearn.preprocessing import normalize
 from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-
+from sklearn.metrics.pairwise import cosine_similarity
 
 import nltk
 from nltk.stem.porter import *
@@ -51,43 +51,38 @@ def fetch_table(sql_engine, table_name:str): #fetch table from SQL and process c
 
 def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT
     ## takes a string and converts it into a list of stemmed words
-
-    tokens = re.findall(r'[a-z0-9]+',words.lower())
+    tokens = re.findall(r'[a-z0-9]+',words)
     return [ps.stem(token) for token in tokens if token not in stopwords_set]
-
-# old cossim
-def smart_cosdist(matrix:np.ndarray,query_vec:np.ndarray) -> np.ndarray:
-    # Returns an array, where array[n] represents the cosine similarity of the nth document
-
-    assert matrix.shape[1] == query_vec.shape[1]
-    query_vec = query_vec.flatten()
-
-    relevant_terms = np.nonzero(query_vec)[0]
-
-    query_vec = query_vec[relevant_terms]
-    matrix = matrix[:,relevant_terms]
-
-    return np.array([distance.cosine(matrix[doc_index],query_vec) 
-                     if not np.all(matrix[doc_index,:] == 0) else np.inf 
-                     for doc_index in range(0,matrix.shape[0])])
 
 class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
 
     def __init__(self, sql_engine, table_name:str,df, k = 100):
-        self.df = fetch_table(sql_engine,table_name)
 
-        if os.path.isfile(table_name+'_data.pickle'):
-            with open(table_name+'_data.pickle','rb') as file:
-                self.svd_u, self.svd_vt = pickle.load(file)
-            print(type(self.svd_u))
-            #self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
-            #self.matrix = normalize(self.matrix, axis = 1)
-        else:
-            #Initialize tfidfmatrix
+        def open_pickle_if_present(filename:str):
+            if os.path.isfile(self.table_name + '_' + filename + '.pickle'):
+                with open(self.table_name + '_' + filename + '.pickle','rb') as file:
+                    data = pickle.load(file)
+                return data
+            else:
+                return None
+            
+        self.df = df
+        self.table_name = table_name
+
+        #Load files if present
+        self.svd_u = open_pickle_if_present('u')
+        self.svd_s = open_pickle_if_present('s')
+        self.svd_vt = open_pickle_if_present('vt')
+        self.matrix = open_pickle_if_present('matrix')
+
+        if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:#if any file is absent
+            #Initialize tfidf matrix
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
             self.matrix = normalize(self.matrix, axis = 1)
+            with open(table_name+'_matrix.pickle','wb') as file:
+                pickle.dump(self.matrix,file)
 
             #Create and save svd matrices
             self.svd_u,self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
@@ -95,26 +90,45 @@ class table:
             self.svd_vt = self.svd_vt.astype(np.float16)
             self.svd_s = self.svd_s.astype(np.float16)
 
-            with open(table_name+'_u.pickle','wb') as file:
+            with open('lib/'+table_name+'_u.pickle','wb') as file:
                 pickle.dump(self.svd_u,file)
-            with open(table_name+'_s.pickle','wb') as file:
+            with open('lib/'+table_name+'_s.pickle','wb') as file:
                 pickle.dump(self.svd_s,file)
-            with open(table_name+'_vt.pickle','wb') as file:
+            with open('lib/'+table_name+'_vt.pickle','wb') as file:
                 pickle.dump(self.svd_vt,file)
 
-        #initialize global vectorizer 
-    
-    def vectorize_query(query:str):
+    def vectorize_query(self,query:str):
         #TODO: Put in Spellchecker
         #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
+        #DICT Key: token
+        #Value diction
+
         #Only use words that are in the 
         raise NotImplementedError
         return tfidf_vectorizer.transform(query) # + take into account this weight
+    # old cossim
+    def cossim(self,query:str) -> np.ndarray:
+        # Returns an array, where array[n] represents the cosine similarity of the nth document
+        query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
+        matrix = csc_matrix(self.matrix)
 
-    def suggest_phrases(self, query:str): 
-        raise NotImplementedError
-        query = self.tokenize_stem_words(query)
+        assert matrix.shape[1] == query_vec.shape[1]
+        query_vec = query_vec.flatten()
+
+        relevant_terms = np.nonzero(query_vec)[0]
+
+        query_vec = query_vec[relevant_terms]
+        matrix = matrix[:,relevant_terms]
         
+        if np.sum(query_vec) == 0 and np.sum(matrix) == 0: #matrix is empty
+            return None
+        else:
+            return cosine_similarity(matrix,query_vec.reshape(1,-1)).flatten()
+    """
+        return np.array([cosine_similarity(matrix[doc_index,:],query_vec) 
+                        if not np.sum(matrix[doc_index,:]) == 0 else 0 
+                        for doc_index in range(0,matrix.shape[0])])
+    """
     # MAIN ALGORITHM
     def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
@@ -148,7 +162,7 @@ def init_tables(sql_engine):
         print("First-Time Initialization. This may take a minute or two...")
 
         tfidf_vectorizer = TfidfVectorizer(
-                    min_df=0.00005,
+                    min_df=0.0001,
                     max_df=0.3,
                     tokenizer=tokenize_stem_words,
                     ngram_range=(1,2)
@@ -161,10 +175,8 @@ def init_tables(sql_engine):
         pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
 
     #Initialize tables
-    #rep:0.01-0.2
-    #un: 0.005
-    #x
+    #original min_df: 0.00005
     #NOTE: these parameters are manually optimized
-    un_table = table(sql_engine,'un_docs',un_df,k=150)
-    x_table = table(sql_engine,'x_docs',x_df, k=150)
-    rep_table = table(sql_engine,'rep_docs',rep_df, k=200)
+    un_table = table(sql_engine,'un_docs',un_df,k=10)
+    x_table = table(sql_engine,'x_docs',x_df, k=10)
+    rep_table = table(sql_engine,'rep_docs',rep_df, k=10)

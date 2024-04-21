@@ -7,7 +7,7 @@
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-from lib.Text_Processing_Utils import smart_cosdist
+from lib.Utils import sparse_argsort
 
 
 def doc_search_x_handler(sql_engine,text,limit):
@@ -21,7 +21,7 @@ def doc_search_x_handler(sql_engine,text,limit):
     # Formatted output
     ttic = [
       f"{user} said: {tc}" 
-       for user, tc in x_table.df[['user_name', 'text_content']].iloc[np.argsort(results)][::-1][:limit].values
+       for user, tc in x_table.df[['user_name', 'text_content']].iloc[sparse_argsort(results)][::-1][:limit].values
     ]
 
     return ttic
