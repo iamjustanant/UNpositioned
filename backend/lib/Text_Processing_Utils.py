@@ -81,7 +81,7 @@ class table:
             #Initialize tfidf matrix
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
             self.matrix = normalize(self.matrix, axis = 1)
-            with open(table_name+'_matrix.pickle','wb') as file:
+            with open('lib/'+table_name+'_matrix.pickle','wb') as file:
                 pickle.dump(self.matrix,file)
 
             #Create and save svd matrices
@@ -153,10 +153,10 @@ def init_tables(sql_engine):
     rep_df = fetch_table(sql_engine,'rep_docs')
 
     #Create Vectorizer
-    if os.path.isfile('tfidf_vectorizer.pickle'): #open file if present
-        with open('tfidf_vectorizer.pickle','rb') as file:
+    if os.path.isfile('lib/tfidf_vectorizer.pickle'): #open file if present
+        with open('lib/tfidf_vectorizer.pickle','rb') as file:
             tfidf_vectorizer = pickle.load(file)
-        with open('wordlist.pickle','wb') as file:
+        with open('lib/wordlist.pickle','wb') as file:
             pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
     else:
         print("First-Time Initialization. This may take a minute or two...")
@@ -169,14 +169,14 @@ def init_tables(sql_engine):
                     )
         tfidf_vectorizer = tfidf_vectorizer.fit(pd.concat((un_df['text_content'],x_df['text_content'],rep_df['text_content'])))
 
-    with open('tfidf_vectorizer.pickle','wb') as file:
+    with open('lib/tfidf_vectorizer.pickle','wb') as file:
         pickle.dump(tfidf_vectorizer, file)
-    with open('wordlist.pickle','wb') as file:
+    with open('lib/wordlist.pickle','wb') as file:
         pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
 
     #Initialize tables
     #original min_df: 0.00005
     #NOTE: these parameters are manually optimized
-    un_table = table(sql_engine,'un_docs',un_df,k=10)
-    x_table = table(sql_engine,'x_docs',x_df, k=10)
-    rep_table = table(sql_engine,'rep_docs',rep_df, k=10)
+    un_table = table(sql_engine,'un_docs',un_df,k=30)
+    x_table = table(sql_engine,'x_docs',x_df, k=30)
+    rep_table = table(sql_engine,'rep_docs',rep_df, k=30)

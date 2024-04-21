@@ -12,16 +12,18 @@ from lib.Utils import sparse_argsort
 
 def doc_search_x_handler(sql_engine,text,limit):
   from lib.Text_Processing_Utils import x_table
-  results = x_table.svd_cossim(text)
+  cossim_results = x_table.cossim(text)
 
-  if results is not None:
+  svd_results = x_table.svd_cossim(text)
+
+  if cossim_results is not None and svd_results is not None:
     """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
                np.sort(results)[::-1][:limit])"""
     
     # Formatted output
     ttic = [
       f"{user} said: {tc}" 
-       for user, tc in x_table.df[['user_name', 'text_content']].iloc[sparse_argsort(results)][::-1][:limit].values
+       for user, tc in x_table.df[['user_name', 'text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
 
     return ttic

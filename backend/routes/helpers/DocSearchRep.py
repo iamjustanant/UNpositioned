@@ -11,18 +11,21 @@ from lib.Utils import sparse_argsort
 
 def doc_search_rep_handler(sql_engine,text,limit):
   from lib.Text_Processing_Utils import rep_table
-  results = rep_table.svd_cossim(text)
 
-  if results is not None:
+  cossim_results = rep_table.cossim(text)
+
+  svd_results = rep_table.svd_cossim(text)
+
+  if cossim_results is not None or svd_results is not None:
     """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
                np.sort(results)[::-1][:limit])"""
     
     # Formatted output
     ttic = [
        f"{author} said on {ms.upper()}: {tc}" 
-       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[sparse_argsort(results)][::-1][:limit].values
+       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[
+         np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
-
     return ttic
   
   else:
