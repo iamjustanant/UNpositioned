@@ -22,7 +22,7 @@ LOCAL_MYSQL_PORT = 3306
 LOCAL_MYSQL_DATABASE = "kardashiandb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
 
-# load data
+# load data (one-time)
 # mysql_engine.load_file_into_db()
 
 # Create the Flask app
@@ -42,27 +42,28 @@ def termsearch():
     queryStr = parseArg(request.args.get("text").replace("+"," "))
     desiredType = parseArg(request.args.get("type"))
     limit = parseInt(request.args.get("limit"))
-    return formatServerResponse(term_search_handler(mysql_engine,queryStr,desiredType,limit))
+    return formatServerResponse(term_search_handler(queryStr,desiredType,limit))
 
 @app.route("/api/docsearch")
 def docsearch():
-    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocID = parseInt(request.args.get("doc_id"))
     queryDocType = parseArg(request.args.get("doc_type"))
     desiredType = parseArg(request.args.get("type"))
     limit = parseInt(request.args.get("limit"))
-    return formatServerResponse(doc_search_handler(mysql_engine,queryDocID,queryDocType,desiredType,limit))
+    # return formatServerResponse(doc_search_handler(queryDocID,queryDocType,desiredType,limit))
+    return formatServerResponse(doc_search_handler(queryDocID,queryDocType,limit))
 
 @app.route("/api/getdocpreview")
 def docpreview():
-    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocID = parseInt(request.args.get("doc_id"))
     queryDocType = parseArg(request.args.get("doc_type"))
-    return formatServerResponse(doc_preview_handler(mysql_engine,queryDocID,queryDocType))
+    return formatServerResponse(doc_preview_handler(queryDocID,queryDocType))
 
 @app.route("/api/getdoc")
 def doc_search_rep():
-    queryDocID = parseArg(request.args.get("doc_id"))
+    queryDocID = parseInt(request.args.get("doc_id"))
     queryDocType = parseArg(request.args.get("doc_type"))
-    return formatServerResponse(doc_get_handler(mysql_engine,queryDocID,queryDocType))
+    return formatServerResponse(doc_get_handler(queryDocID,queryDocType))
 
 # Serve all remaining files from the frontend
 @app.route("/<path:path>")

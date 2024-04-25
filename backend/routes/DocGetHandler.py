@@ -1,18 +1,33 @@
-def doc_get_handler(sql_engine,queryDocID,queryDocType):
-  # TODO: Implement this function to return the FULL document with the given ID and type
-  #TODO: Implement this function to return a PREVIEW of the document with the given ID and type (probably just the most relevant sentence)
+from routes.helpers.DocSearchUN import country_map
 
-  if queryDocType == 'UN':
+def doc_get_handler(queryDocID,queryDocType):
+  #TODO: Implement this function to return the FULL document with the given ID and type
+  from lib.Text_Processing_Utils import un_table, x_table, rep_table
+
+  if queryDocType == 'un':
     row = un_table.df.loc[queryDocID]
-
+    country, year, tc = row[['country','year_created','text_content']]
     paragraph = " ".join(un_table.df[un_table.df['paragraph_index'] == row['paragraph_index']]['text_content'].values)
-    return row['country_name'] + ', ' + row['year'] + ': '  + paragraph
+    ttic = [
+       f"In {year}, {country_map(country).upper()} said: {paragraph}" 
+    ]
+    return ttic
     
-  elif queryDocType == 'X':
+  elif queryDocType == 'x':
     row = x_table.df.loc[queryDocID]
-    return row['text_content']
-  elif queryDocType == 'Rep':
+    user, tc = row[['user_name', 'text_content']]
+    ttic = [
+      f"{user} said: {tc}" 
+    ]
+    return ttic
+  
+  elif queryDocType == 'rep':
     row = rep_table.df.loc[queryDocID]
-    return row['text_content']
+    ms, author, tc = row[['media_source','author','text_content']]
+    ttic = [
+       f"{author} said on {ms.upper()}: {tc}" 
+    ]
+    return ttic
+  
   else:
-    return None
+    return ['type error']

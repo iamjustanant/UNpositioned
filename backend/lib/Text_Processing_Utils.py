@@ -9,21 +9,29 @@ import pickle
 # Search entire phrases smartly
 # Faster search
 
-from sklearn.preprocessing import normalize
+from scipy.spatial import distance
 from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
+
+from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.neighbors import NearestNeighbors
 
 import nltk
+# one-time downloads
+# nltk.download('stopwords')
+# nltk.download('punkt')
 from nltk.stem.porter import *
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 from nltk.corpus import stopwords
-nltk.download('stopwords')
+
 stopwords_set = set(stopwords.words('english'))
 ps = PorterStemmer()
-from scipy.spatial import distance
 
-def fetch_table(sql_engine, table_name:str): #fetch table from SQL and process certain UN docs
+def fetch_table(sql_engine, table_name:str):
+    """
+    fetch table from SQL and process certain UN docs
+    """
     data = sql_engine.query_selector("SELECT * FROM " + table_name)
     df = pd.DataFrame(data.fetchall())
     df.columns = data.keys()
@@ -32,25 +40,40 @@ def fetch_table(sql_engine, table_name:str): #fetch table from SQL and process c
         #exploding by sentence
         df['text_content'] = df['text_content'].apply(sent_tokenize)
         df = df.explode('text_content').reset_index(names='paragraph_index')
-
-        #cleaning
+        
+        # clean 
         df = df[df['text_content'].str.len() >= 30]
-        df['text_content'] = df['text_content'].str.replace('\s{2,}',' ',regex=True) #delete duplicate spaces
-        df['text_content'] = df['text_content'].str.replace('\n',' ') #Removing nextlines
+
+        df['text_content'] = df['text_content'].str.replace(r'\s+', ' ', regex=True) # remove spaces
+
+        # remove nextlines
+        df['text_content'] = df['text_content'].str.replace('\n',' ') 
         df['text_content'] = df['text_content'].str.replace('\x0c',' ')
 
         df = df[df['text_content'].str.len() >= 5]
 
+        # typing
         df['text_content'] = df['text_content'].astype('str')
-
         df['sess'] = df['sess'].astype('int')
         df['year_created'] = df['year_created'].astype('int')
         df['country'] = df['country'].astype('str')
+
+        # truncate (?)
         df = df[df['year_created'] >= 2007]
+                
+    """    
+    elif table_name == 'x_docs':
+        (more processing)
+    else:   # rep_docs
+        (more processing)
+    """
+
     return df
 
-def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT
-    ## takes a string and converts it into a list of stemmed words
+def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT (?)
+    """
+    takes a string and converts it into a list of stemmed words
+    """
     tokens = re.findall(r'[a-z0-9]+',words)
     return [ps.stem(token) for token in tokens if token not in stopwords_set]
 
@@ -77,7 +100,7 @@ class table:
         self.svd_vt = open_pickle_if_present('vt')
         self.matrix = open_pickle_if_present('matrix')
 
-        if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:#if any file is absent
+        if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:  #if any file is absent
             #Initialize tfidf matrix
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
             self.matrix = normalize(self.matrix, axis = 1)
@@ -97,6 +120,7 @@ class table:
             with open('lib/'+table_name+'_vt.pickle','wb') as file:
                 pickle.dump(self.svd_vt,file)
 
+    """
     def vectorize_query(self,query:str):
         #TODO: Put in Spellchecker
         #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
@@ -105,8 +129,9 @@ class table:
 
         #Only use words that are in the 
         raise NotImplementedError
-        return tfidf_vectorizer.transform(query) # + take into account this weight
-    # old cossim
+        # return tfidf_vectorizer.transform(query) + take into account this weight
+    """
+
     def cossim(self,query:str) -> np.ndarray:
         # Returns an array, where array[n] represents the cosine similarity of the nth document
         query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
@@ -129,7 +154,7 @@ class table:
                         if not np.sum(matrix[doc_index,:]) == 0 else 0 
                         for doc_index in range(0,matrix.shape[0])])
     """
-    # MAIN ALGORITHM
+
     def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
         query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
@@ -142,7 +167,25 @@ class table:
         #optional boolean search weight
         boolean_search_results = self.df['text_content'].str.lower().str.contains(query).values
 
-        return np.multiply(self.svd_u.dot(svd_vec),(boolean_search_results * boolean_incentive) + 1) #we also slightly incentivize articles with the exact (stemmed wording)
+        #we also slightly incentivize articles with the exact (stemmed wording)
+        return np.multiply(self.svd_u.dot(svd_vec),(boolean_search_results * boolean_incentive) + 1)
+    
+    #big fail
+    """
+    def neighbors(self, query, limit):
+        knn = NearestNeighbors(n_neighbors=limit, algorithm='auto', metric='cosine')
+        knn.fit(self.matrix)
+        
+        query_vec = tfidf_vectorizer.transform([query])
+        distances, indices = knn.kneighbors(query_vec)
+
+        ret = []
+        text_col = self.df['text_content']
+        for i in range(len(indices[0])):
+            ret.append(text_col[indices[0][i]])
+
+        return ret
+    """
 
 
 def init_tables(sql_engine):

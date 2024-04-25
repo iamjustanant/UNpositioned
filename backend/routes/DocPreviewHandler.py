@@ -1,15 +1,17 @@
-def doc_preview_handler(sql_engine,queryDocID,queryDocType):
+from routes.helpers.DocSearchUN import country_map
+from routes.DocGetHandler import doc_get_handler
+
+def doc_preview_handler(queryDocID,queryDocType):
   #TODO: Implement this function to return a PREVIEW of the document with the given ID and type (probably just the most relevant sentence)
-  if queryDocType == 'UN':
+  from lib.Text_Processing_Utils import un_table
+
+  if queryDocType == 'un':
     row = un_table.df.loc[queryDocID]
-    return row['country_name'] + ', ' + row['year'] + ': '  + row['text_content']
-  elif queryDocType == 'X':
-    row = x_table.df.loc[queryDocID]
-    return row['text_content']
-  elif queryDocType == 'Rep':
-    row = rep_table.df.loc[queryDocID]
-    return row['text_content']
-  else:
-    return 'type error'
+    country, year, tc = row[['country','year_created','text_content']]
+    ttic = [
+       f"In {year}, {country_map(country).upper()} said: {tc}" 
+    ]
+    return ttic
   
-  #TODO: properly format responses
+  else:
+    return doc_get_handler(queryDocID, queryDocType)

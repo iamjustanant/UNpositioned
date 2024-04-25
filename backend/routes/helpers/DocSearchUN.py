@@ -8,7 +8,7 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 import pycountry
-from lib.Utils import sparse_argsort
+# from lib.Utils import sparse_argsort
 
 def country_map(alpha_3):
     try:
@@ -17,18 +17,14 @@ def country_map(alpha_3):
     except AttributeError:
         return 'Unknown country'
 
-def doc_search_un_handler(sql_engine,text,limit):
+def doc_search_un_handler(text,limit):
   from lib.Text_Processing_Utils import un_table
   # 10-6000
     
   cossim_results = un_table.cossim(text)
-
   svd_results = un_table.svd_cossim(text)
 
   if svd_results is not None and cossim_results is not None:
-    """return zip(un_table.df.iloc[np.argsort(results)[::-1]][['country','year_created','text_content']][:limit].values, \
-               np.sort(results)[::-1][:limit])"""
-    
     # Formatted output
     ttic = [
        f"In {year}, {country_map(country).upper()} said: {tc}" 
