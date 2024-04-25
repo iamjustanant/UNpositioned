@@ -48,7 +48,6 @@ def termsearch():
 def docsearch():
     queryDocID = parseInt(request.args.get("doc_id"))
     queryDocType = parseArg(request.args.get("doc_type"))
-    desiredType = parseArg(request.args.get("type"))
     limit = parseInt(request.args.get("limit"))
     # return formatServerResponse(doc_search_handler(queryDocID,queryDocType,desiredType,limit))
     return formatServerResponse(doc_search_handler(queryDocID,queryDocType,limit))

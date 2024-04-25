@@ -1,13 +1,25 @@
 import { defineConfig } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
+import solidPlugin from "vite-plugin-solid";
 import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [svelte()],
+    plugins: [
+        /* 
+    Uncomment the following line to enable solid-devtools.
+    For more info see https://github.com/thetarnav/solid-devtools/tree/main/packages/extension#readme
+    */
+        // devtools(),
+        solidPlugin(),
+    ],
+    server: {
+        port: 3000,
+    },
+    build: {
+        target: "esnext",
+    },
     resolve: {
         alias: {
-            $lib: path.resolve("./src/lib"),
+            "~": path.resolve(__dirname, "./src"),
         },
     },
 });
