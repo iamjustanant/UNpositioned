@@ -19,8 +19,8 @@ def doc_search_rep_handler(text,limit):
     
     # Formatted output
     ttic = [
-       f"{author} said on {ms.upper()}: {tc}" 
-       for ms, author, tc in rep_table.df[['media_source','author','text_content']].iloc[
+       f"{id-1}|||{author} said on {ms.upper()}: {tc}" 
+       for id, ms, author, tc in rep_table.df[['id','media_source','author','text_content']].iloc[
          np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
     return ttic

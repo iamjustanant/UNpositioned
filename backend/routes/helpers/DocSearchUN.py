@@ -27,10 +27,9 @@ def doc_search_un_handler(text,limit):
   if svd_results is not None and cossim_results is not None:
     # Formatted output
     ttic = [
-       f"In {year}, {country_map(country).upper()} said: {tc}" 
-       for country, year, tc in un_table.df[['country','year_created','text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
+       f"{id}|||In {year}, {country_map(country).upper()} said: {tc}" 
+       for id, country, year, tc in un_table.df[['idx','country','year_created','text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
-
     return ttic
   
   else:

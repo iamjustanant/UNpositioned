@@ -20,10 +20,9 @@ def doc_search_x_handler(text,limit):
     
     # Formatted output
     ttic = [
-      f"{user} said: {tc}" 
-       for user, tc in x_table.df[['user_name', 'text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
+      f"{id-1}|||{user} said: {tc}" 
+       for id, user, tc in x_table.df[['id', 'user_name', 'text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
-
     return ttic
   
   else:

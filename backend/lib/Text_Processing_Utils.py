@@ -60,6 +60,9 @@ def fetch_table(sql_engine, table_name:str):
 
         # truncate (?)
         df = df[df['year_created'] >= 2007]
+
+        # reset index
+        df['idx'] = df.index
                 
     """    
     elif table_name == 'x_docs':
