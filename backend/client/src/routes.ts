@@ -23,7 +23,6 @@ export const routes: CustomRoute[] = [
     {
         path: "/about",
         component: lazy(() => import("./pages/about")),
-        data: AboutData,
         label: "About",
     },
     {
