@@ -15,12 +15,14 @@ from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.neighbors import NearestNeighbors
+# from sklearn.neighbors import NearestNeighbors
 
 import nltk
+
 # one-time downloads
-# nltk.download('stopwords')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt')
+
 from nltk.stem.porter import *
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 from nltk.corpus import stopwords
@@ -62,11 +64,22 @@ def fetch_table(sql_engine, table_name:str):
         df = df[df['year_created'] >= 2007]
 
         # reset index
-        df['idx'] = df.index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
                 
-    """    
     elif table_name == 'x_docs':
-        (more processing)
+        # remove dupes
+        df['dup'] = df['text_content'].apply(lambda x: x.split(' https')[0])
+        df = df.drop_duplicates(subset=['dup'])
+        df = df.drop('dup', axis=1)
+
+        # reset index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
+
+    """
     else:   # rep_docs
         (more processing)
     """
