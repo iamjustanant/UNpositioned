@@ -2,6 +2,13 @@
 
 Quickly look for official international perspectives on various topics.
 
+## Remaining TODOs
+
+-   [ ] Allow stateful history (go back and forth in depth of searches)
+-   [ ] Keyboard shortcutrs
+-   [ ] Limit # of results
+-   [ ] Sort by date or alphabetically by country name
+
 ## Setup
 
 1. Clone the repository to a local directory.
