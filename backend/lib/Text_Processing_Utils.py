@@ -62,13 +62,24 @@ def fetch_table(sql_engine, table_name:str):
         df = df[df['year_created'] >= 2007]
 
         # reset index
-        df['idx'] = df.index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
                 
-    """    
     elif table_name == 'x_docs':
-        (more processing)
+        # remove dupes
+        df['dup'] = df['text_content'].apply(lambda x: x.split(' https')[0])
+        df = df.drop_duplicates(subset=['dup'])
+        df = df.drop('dup', axis=1)
+
+        # reset index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
+    
+    """"
     else:   # rep_docs
-        (more processing)
+        (more processing if needed)
     """
 
     return df
