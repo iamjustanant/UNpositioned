@@ -23,7 +23,10 @@
     "@solidjs/router": "^0.8.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "highlight-words": "^1.2.2",
+    "highlight-words-core": "^1.2.2",
     "lucide-solid": "^0.373.0",
+    "memoize-one": "^6.0.0",
     "solid-js": "^1.8.11",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"

@@ -17,9 +17,18 @@ dependencies:
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
+  highlight-words:
+    specifier: ^1.2.2
+    version: 1.2.2
+  highlight-words-core:
+    specifier: ^1.2.2
+    version: 1.2.2
   lucide-solid:
     specifier: ^0.373.0
     version: 0.373.0(solid-js@1.8.11)
+  memoize-one:
+    specifier: ^6.0.0
+    version: 6.0.0
   solid-js:
     specifier: ^1.8.11
     version: 1.8.11
@@ -1436,6 +1445,15 @@ packages:
     dependencies:
       function-bind: 1.1.1
 
+  /highlight-words-core@1.2.2:
+    resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
+    dev: false
+
+  /highlight-words@1.2.2:
+    resolution: {integrity: sha512-Mf4xfPXYm8Ay1wTibCrHpNWeR2nUMynMVFkXCi4mbl+TEgmNOe+I4hV7W3OCZcSvzGL6kupaqpfHOemliMTGxQ==}
+    engines: {node: '>= 16', npm: '>= 8'}
+    dev: false
+
   /html-entities@2.3.3:
     resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
     dev: true
@@ -1518,6 +1536,10 @@ packages:
       solid-js: ^1.4.7
     dependencies:
       solid-js: 1.8.11
+    dev: false
+
+  /memoize-one@6.0.0:
+    resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
     dev: false
 
   /merge-anything@5.1.7:

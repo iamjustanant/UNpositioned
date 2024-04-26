@@ -8,7 +8,13 @@ import { routes } from "~/routes";
 export function MainNav(props: ComponentProps<"nav">) {
     const [, rest] = splitProps(props, ["class"]);
     return (
-        <nav class={cn("flex justify-between py-4", props.class)} {...rest}>
+        <nav
+            class={cn(
+                "flex justify-between py-4 px-6 bg-zinc-800 text-white",
+                props.class
+            )}
+            {...rest}
+        >
             <div class='flex items-start space-x-4 lg:space-x-6'>
                 <For each={routes}>
                     {({ path, label, hidden }) => (

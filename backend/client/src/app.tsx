@@ -10,7 +10,7 @@ const App: Component = () => {
 
     return (
         <>
-            <MainNav class='mx-6' />
+            <MainNav />
 
             <main>
                 <Route />
