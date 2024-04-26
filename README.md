@@ -2,6 +2,13 @@
 
 Quickly look for official international perspectives on various topics.
 
+## Remaining TODOs
+
+-   [ ] Allow stateful history (go back and forth in depth of searches)
+-   [ ] Keyboard shortcutrs
+-   [ ] Limit # of results
+-   [ ] Sort by date or alphabetically by country name
+
 ## Setup
 
 1. Clone the repository to a local directory.
@@ -20,6 +27,14 @@ make dev # Start the server
 ```bash
 TEAM_NAME=teamname APP_PORT=5175 docker-compose up
 ```
+
+## Deployment
+
+Uncomment lines 22-23 in `backend/lib/Text_Processing_Utils.py` and line 26 in `backend/app.py`.
+
+Change the URL in `backend/client/src/constants.ts` from "http://localhost:5000" to the server's URL (I think).
+
+Then, upload to the INFO 4300 website as standard.
 
 ## Project Structure
 

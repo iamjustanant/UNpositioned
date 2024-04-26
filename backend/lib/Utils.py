@@ -1,4 +1,5 @@
 import json
+import numpy as np
 
 def parseBool(v):
   if v is None:
@@ -12,6 +13,11 @@ def parseInt(v):
 
 def parseArg(str):
   return str.replace("+"," ")
+
+def sparse_argsort(arr:np.ndarray): #argsort while excluding zeros
+    #https://stackoverflow.com/questions/40857349/np-argsort-which-excludes-zero-values
+    indices = np.nonzero(arr)[0]
+    return indices[np.argsort(arr[indices])]
 
 def formatServerResponse(data):
   try:

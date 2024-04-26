@@ -9,106 +9,171 @@ import pickle
 # Search entire phrases smartly
 # Faster search
 
+from scipy.spatial import distance
+from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
+
 from sklearn.preprocessing import normalize
-from scipy.sparse import linalg
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.neighbors import NearestNeighbors
 
 import nltk
+
+# one-time downloads
 nltk.download('stopwords')
+nltk.download('punkt')
 
 from nltk.stem.porter import *
+from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 from nltk.corpus import stopwords
-from scipy.spatial import distance
+
+stopwords_set = set(stopwords.words('english'))
+ps = PorterStemmer()
 
 def fetch_table(sql_engine, table_name:str):
+    """
+    fetch table from SQL and process certain UN docs
+    """
     data = sql_engine.query_selector("SELECT * FROM " + table_name)
     df = pd.DataFrame(data.fetchall())
     df.columns = data.keys()
+
+    if table_name == 'un_docs':
+        #exploding by sentence
+        df['text_content'] = df['text_content'].apply(sent_tokenize)
+        df = df.explode('text_content').reset_index(names='paragraph_index')
+        
+        # clean 
+        df = df[df['text_content'].str.len() >= 30]
+
+        df['text_content'] = df['text_content'].str.replace(r'\s+', ' ', regex=True) # remove spaces
+
+        # remove nextlines
+        df['text_content'] = df['text_content'].str.replace('\n',' ') 
+        df['text_content'] = df['text_content'].str.replace('\x0c',' ')
+
+        df = df[df['text_content'].str.len() >= 5]
+
+        # typing
+        df['text_content'] = df['text_content'].astype('str')
+        df['sess'] = df['sess'].astype('int')
+        df['year_created'] = df['year_created'].astype('int')
+        df['country'] = df['country'].astype('str')
+
+        # truncate (?)
+        df = df[df['year_created'] >= 2007]
+
+        # reset index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
+                
+    elif table_name == 'x_docs':
+        # remove dupes
+        df['dup'] = df['text_content'].apply(lambda x: x.split(' https')[0])
+        df = df.drop_duplicates(subset=['dup'])
+        df = df.drop('dup', axis=1)
+
+        # reset index
+        df = df.drop('id', axis=1)
+        df = df.reset_index(drop=True)
+        df['id'] = df.index
+
+    """
+    else:   # rep_docs
+        (more processing)
+    """
+
     return df
 
-# old cossim
-
-def smart_cosdist(matrix:np.ndarray,query_vec:np.ndarray) -> np.ndarray:
-    # Returns an array, where array[n] represents the cosine similarity of the nth document
-
-    assert matrix.shape[1] == query_vec.shape[1]
-    query_vec = query_vec.flatten()
-
-    relevant_terms = np.nonzero(query_vec)[0]
-
-    query_vec = query_vec[relevant_terms]
-    matrix = matrix[:,relevant_terms]
-
-    return np.array([distance.cosine(matrix[doc_index],query_vec) 
-                     if not np.all(matrix[doc_index,:] == 0) else np.inf 
-                     for doc_index in range(0,matrix.shape[0])])
-
+def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT (?)
+    """
+    takes a string and converts it into a list of stemmed words
+    """
+    tokens = re.findall(r'[a-z0-9]+',words)
+    return [ps.stem(token) for token in tokens if token not in stopwords_set]
 
 class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
 
-    def __init__(self, sql_engine, table_name:str,min_df:float=0.0001,max_df:float=0.99, k = 30):
-        self.df = fetch_table(sql_engine,table_name)
-        self.stopwords_set = set(stopwords.words('english'))
-        self.ps = PorterStemmer()
+    def __init__(self, sql_engine, table_name:str,df, k = 100):
 
-        if os.path.isfile(table_name+'_data.pickle'):
-            with open(table_name+'_data.pickle','rb') as file:
-                self.vectorizer, self.matrix, self.svd_u, self.svd_s, self.svd_vt = pickle.load(file)
-        else:
-            self.vectorizer = TfidfVectorizer(
-            min_df=min_df,
-            max_df=max_df,
-            tokenizer=self.tokenize_stem_words
-            )
-            self.vectorizer = self.vectorizer.fit(self.df['text_content'])
-
-            self.matrix = self.vectorizer.transform(self.df['text_content'])
-            self.matrix = normalize(self.matrix, axis = 1)
+        def open_pickle_if_present(filename:str):
+            if os.path.isfile(self.table_name + '_' + filename + '.pickle'):
+                with open(self.table_name + '_' + filename + '.pickle','rb') as file:
+                    data = pickle.load(file)
+                return data
+            else:
+                return None
             
-            self.svd_u, self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
+        self.df = df
+        self.table_name = table_name
 
-            with open(table_name+'_data.pickle','wb') as file:
-                pickle.dump((self.vectorizer, self.matrix, self.svd_u, self.svd_s, self.svd_vt), file)
+        #Load files if present
+        self.svd_u = open_pickle_if_present('u')
+        self.svd_s = open_pickle_if_present('s')
+        self.svd_vt = open_pickle_if_present('vt')
+        self.matrix = open_pickle_if_present('matrix')
 
-    def phrase_tokenizer(self, words:str):
+        if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:  #if any file is absent
+            #Initialize tfidf matrix
+            self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
+            self.matrix = normalize(self.matrix, axis = 1)
+            with open('lib/'+table_name+'_matrix.pickle','wb') as file:
+                pickle.dump(self.matrix,file)
+
+            #Create and save svd matrices
+            self.svd_u,self.svd_s, self.svd_vt = linalg.svds(self.matrix,k=k)
+            self.svd_u = self.svd_u.astype(np.float16)
+            self.svd_vt = self.svd_vt.astype(np.float16)
+            self.svd_s = self.svd_s.astype(np.float16)
+
+            with open('lib/'+table_name+'_u.pickle','wb') as file:
+                pickle.dump(self.svd_u,file)
+            with open('lib/'+table_name+'_s.pickle','wb') as file:
+                pickle.dump(self.svd_s,file)
+            with open('lib/'+table_name+'_vt.pickle','wb') as file:
+                pickle.dump(self.svd_vt,file)
+
+    """
+    def vectorize_query(self,query:str):
+        #TODO: Put in Spellchecker
+        #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
+        #DICT Key: token
+        #Value diction
+
+        #Only use words that are in the 
         raise NotImplementedError
-        token_corr = np.corrcoef(self.matrix,rowvar=False)
+        # return tfidf_vectorizer.transform(query) + take into account this weight
+    """
 
-        tokens = re.findall(r"[a-z]{2,}",words.lower())
-        #tokens = [self.ps.stem(token) for token in tokens if token not in self.stopwords_set]
-        phrase_tokens = []
-        index = 0
-        while index < len(tokens):
-            if tokens[index] not in self.stopwords_set:
-                tokens[index] = self.ps.stem(tokens[index])
-                if token_corr[self.ps.stem(tokens[index + 1]),self.ps.stem(tokens[index])] > 0.7:
-                    phrase_tokens[index] = tokens[index] + " " + tokens[index + 1]
-                else:
-                    phrase_tokens[index] = tokens[index]
-                    index += 1
-        return phrase_tokens
-                    
-    def suggest_phrases(self, query:str): 
-        raise NotImplementedError
-        query_vec = self.vectorizer.transform([str(query),]).toarray()
-        if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
+    def cossim(self,query:str) -> np.ndarray:
+        # Returns an array, where array[n] represents the cosine similarity of the nth document
+        query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
+        matrix = csc_matrix(self.matrix)
+
+        assert matrix.shape[1] == query_vec.shape[1]
+        query_vec = query_vec.flatten()
+
+        relevant_terms = np.nonzero(query_vec)[0]
+
+        query_vec = query_vec[relevant_terms]
+        matrix = matrix[:,relevant_terms]
+        
+        if np.sum(query_vec) == 0 and np.sum(matrix) == 0: #matrix is empty
             return None
-        
-        self.count_vectorizor = CountVectorizer(min_df=10, tokenizer = self.phrase_tokenizer)
+        else:
+            return cosine_similarity(matrix,query_vec.reshape(1,-1)).flatten()
+    """
+        return np.array([cosine_similarity(matrix[doc_index,:],query_vec) 
+                        if not np.sum(matrix[doc_index,:]) == 0 else 0 
+                        for doc_index in range(0,matrix.shape[0])])
+    """
 
-        
-    def tokenize_stem_words(self,words:str): # CAN BE MORE EFFICIENT
-        ## takes a string and converts it into a list of stemmed words
-        tokens = re.findall(r"[a-z]{2,}",words.lower())
-        return [self.ps.stem(token) for token in tokens if token not in self.stopwords_set]        
-    
-
-    # MAIN ALGORITHM
-    def svd_cossim(self, query:str, boolean_incentive = 0.2) -> np.ndarray:
+    def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
-        query_vec = self.vectorizer.transform([str(query),]).toarray()
+        query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
             return None
 
@@ -116,6 +181,61 @@ class table:
         svd_vec = normalize(np.dot(query_vec, self.svd_vt.T)).squeeze()
 
         #optional boolean search weight
-        boolean_search_results = self.df['text_content'].str.contains(query).values
+        boolean_search_results = self.df['text_content'].str.lower().str.contains(query).values
 
-        return np.multiply(self.svd_u.dot(svd_vec),(boolean_search_results * boolean_incentive) + 1) #we also slightly incentivize articles with the exact (stemmed wording)
+        #we also slightly incentivize articles with the exact (stemmed wording)
+        return np.multiply(self.svd_u.dot(svd_vec),(boolean_search_results * boolean_incentive) + 1)
+    
+    #big fail
+    """
+    def neighbors(self, query, limit):
+        knn = NearestNeighbors(n_neighbors=limit, algorithm='auto', metric='cosine')
+        knn.fit(self.matrix)
+        
+        query_vec = tfidf_vectorizer.transform([query])
+        distances, indices = knn.kneighbors(query_vec)
+
+        ret = []
+        text_col = self.df['text_content']
+        for i in range(len(indices[0])):
+            ret.append(text_col[indices[0][i]])
+
+        return ret
+    """
+
+
+def init_tables(sql_engine):
+    #Fetch from SQL Database
+    global un_df, x_df, rep_df,tfidf_vectorizer, un_table,x_table,rep_table
+    un_df = fetch_table(sql_engine,'un_docs')
+    x_df = fetch_table(sql_engine,'x_docs')
+    rep_df = fetch_table(sql_engine,'rep_docs')
+
+    #Create Vectorizer
+    if os.path.isfile('lib/tfidf_vectorizer.pickle'): #open file if present
+        with open('lib/tfidf_vectorizer.pickle','rb') as file:
+            tfidf_vectorizer = pickle.load(file)
+        with open('lib/wordlist.pickle','wb') as file:
+            pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
+    else:
+        print("First-Time Initialization. This may take a minute or two...")
+
+        tfidf_vectorizer = TfidfVectorizer(
+                    min_df=0.0001,
+                    max_df=0.3,
+                    tokenizer=tokenize_stem_words,
+                    ngram_range=(1,2)
+                    )
+        tfidf_vectorizer = tfidf_vectorizer.fit(pd.concat((un_df['text_content'],x_df['text_content'],rep_df['text_content'])))
+
+    with open('lib/tfidf_vectorizer.pickle','wb') as file:
+        pickle.dump(tfidf_vectorizer, file)
+    with open('lib/wordlist.pickle','wb') as file:
+        pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
+
+    #Initialize tables
+    #original min_df: 0.00005
+    #NOTE: these parameters are manually optimized
+    un_table = table(sql_engine,'un_docs',un_df,k=30)
+    x_table = table(sql_engine,'x_docs',x_df, k=30)
+    rep_table = table(sql_engine,'rep_docs',rep_df, k=30)
