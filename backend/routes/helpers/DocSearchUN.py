@@ -4,7 +4,7 @@
 # The function should return the most relevant UN positions.
 # Of course, the first parameter provided is the SQL Engine itself, which lets you execute SQL queries on the database.
 
-from nltk.sentiment import SentimentIntensityAnalyzer
+# from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 import pycountry
@@ -28,7 +28,7 @@ def doc_search_un_handler(text,limit):
     # Formatted output
     ttic = [
        f"{id}|||In {year}, {country_map(country).upper()} said: {tc}" 
-       for id, country, year, tc in un_table.df[['idx','country','year_created','text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
+       for id, country, year, tc in un_table.df[['id','country','year_created','text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
     return ttic
   
