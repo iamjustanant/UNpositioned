@@ -21,4 +21,4 @@ export type X_Document = {
     docType: "x";
 };
 
-export type Document = UN_Document | Rep_Document | X_Document;
+export type AnyDocument = UN_Document | Rep_Document | X_Document;

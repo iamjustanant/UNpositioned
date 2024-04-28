@@ -12,14 +12,13 @@ import { Input } from "~/components/ui/input";
 import { Col, Grid } from "~/components/ui/grid";
 import {
     DocType,
-    Document,
+    AnyDocument,
     Rep_Document,
     UN_Document,
     X_Document,
 } from "~/lib/types";
 import { createStore } from "solid-js/store";
 import { fetcher } from "~/lib/fetch";
-import stateMachine from "~/lib/state";
 import { ArrowRight, Landmark, Loader, Radar } from "lucide-solid";
 import { Search as SearchIcon } from "lucide-solid";
 import { Button } from "~/components/ui/button";
@@ -30,14 +29,20 @@ import UNDoc from "~/components/custom/un-doc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Tweet from "~/components/custom/tweet";
 import FullUNDoc from "~/components/custom/full-doc";
+import stateAPI from "~/lib/state-engine";
+import { HistoryNav } from "~/components/custom/history-nav";
 
 export default function Search() {
     const [searchText, setSearchText] = createSignal("");
 
+    createEffect(() => {
+        setSearchText(stateAPI.searchQuery);
+    });
+
     return (
         <section class='background-dots h-fit min-h-screen w-screen'>
             <Switch fallback={<CustomLoader />}>
-                <Match when={stateMachine.getState.stage === "not-started"}>
+                <Match when={stateAPI.state.stage === "not-started"}>
                     <div class='w-screen h-screen flex flex-col items-center justify-between py-32'>
                         <MainSearch
                             searchText={searchText()}
@@ -51,130 +56,134 @@ export default function Search() {
                 </Match>
                 <Match
                     when={
-                        stateMachine.getState.stage === "initial-search" &&
-                        stateMachine.getState.results.status === "loaded"
+                        stateAPI.state.stage === "initial-search" &&
+                        stateAPI.state.results.status === "loaded"
                     }
                 >
-                    <div class='flex flex-row justify-between w-full h-full'>
-                        <div class='flex flex-col w-[810px] gap-4 p-12'>
-                            <MainSearch
-                                searchText={searchText()}
-                                setSearchText={setSearchText}
-                            />
+                    <>
+                        <HistoryNav />
+                        <div class='flex flex-row justify-between w-full h-full'>
+                            <div class='flex flex-col w-[810px] gap-4 p-12'>
+                                <MainSearch
+                                    searchText={searchText()}
+                                    setSearchText={setSearchText}
+                                />
 
-                            <div class='flex flex-col gap-4 w-full py-8'>
-                                <span class='text-zinc-100/50 text-sm font-bold pl-4'>
-                                    Official UN Responses
+                                <div class='flex flex-col gap-4 w-full py-8'>
+                                    <span class='text-zinc-100/50 text-sm font-bold pl-4'>
+                                        Official UN Responses
+                                    </span>
+                                    <For
+                                        each={
+                                            stateAPI.state["results"].un_results
+                                        }
+                                    >
+                                        {(doc: UN_Document, index) => (
+                                            <UNDoc
+                                                id={doc.docID}
+                                                currentQuery={searchText()}
+                                            />
+                                        )}
+                                    </For>
+                                </div>
+                            </div>
+                            <div class='flex flex-col w-fit gap-4 bg-zinc-100/5 p-12 shadow-sm'>
+                                <span class='text-zinc-100/50 text-sm font-bold pl-4 w-full flex flex-row items-center justify-center'>
+                                    Viewpoints from the Web
                                 </span>
-                                <For
-                                    each={
-                                        stateMachine.getState["results"]
-                                            .un_results
-                                    }
-                                >
-                                    {(doc: UN_Document, index) => (
-                                        <UNDoc
-                                            id={doc.docID}
-                                            currentQuery={searchText()}
-                                        />
-                                    )}
-                                </For>
+                                <Tabs defaultValue='rep' class='w-[405px]'>
+                                    <TabsList class='grid w-full grid-cols-2 bg-zinc-100/10'>
+                                        <TabsTrigger value='rep'>
+                                            Posts by Politicians
+                                        </TabsTrigger>
+                                        <TabsTrigger value='x'>
+                                            Other Tweets
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value='rep'>
+                                        <div class='flex flex-col gap-4 w-full py-8'>
+                                            <For
+                                                each={
+                                                    stateAPI.state["results"]
+                                                        .rep_results
+                                                }
+                                            >
+                                                {(doc: Rep_Document, index) => (
+                                                    <Tweet
+                                                        id={doc.docID}
+                                                        type='rep'
+                                                    />
+                                                )}
+                                            </For>
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value='x'>
+                                        <div class='flex flex-col gap-4 w-full py-8'>
+                                            <For
+                                                each={
+                                                    stateAPI.state["results"]
+                                                        .x_results
+                                                }
+                                            >
+                                                {(doc: X_Document, index) => (
+                                                    <Tweet
+                                                        id={doc.docID}
+                                                        type='x'
+                                                    />
+                                                )}
+                                            </For>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
                         </div>
-                        <div class='flex flex-col w-fit gap-4 bg-zinc-100/5 p-12 shadow-sm'>
-                            <span class='text-zinc-100/50 text-sm font-bold pl-4 w-full flex flex-row items-center justify-center'>
-                                Viewpoints from the Web
-                            </span>
-                            <Tabs defaultValue='rep' class='w-[405px]'>
-                                <TabsList class='grid w-full grid-cols-2 bg-zinc-100/10'>
-                                    <TabsTrigger value='rep'>
-                                        Posts by Politicians
-                                    </TabsTrigger>
-                                    <TabsTrigger value='x'>
-                                        Other Tweets
-                                    </TabsTrigger>
-                                </TabsList>
-                                <TabsContent value='rep'>
-                                    <div class='flex flex-col gap-4 w-full py-8'>
-                                        <For
-                                            each={
-                                                stateMachine.getState["results"]
-                                                    .rep_results
-                                            }
-                                        >
-                                            {(doc: Rep_Document, index) => (
-                                                <Tweet
-                                                    id={doc.docID}
-                                                    type='rep'
-                                                />
-                                            )}
-                                        </For>
-                                    </div>
-                                </TabsContent>
-                                <TabsContent value='x'>
-                                    <div class='flex flex-col gap-4 w-full py-8'>
-                                        <For
-                                            each={
-                                                stateMachine.getState["results"]
-                                                    .x_results
-                                            }
-                                        >
-                                            {(doc: X_Document, index) => (
-                                                <Tweet
-                                                    id={doc.docID}
-                                                    type='x'
-                                                />
-                                            )}
-                                        </For>
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
-                        </div>
-                    </div>
+                    </>
                 </Match>
                 <Match
                     when={
-                        stateMachine.getState.stage === "doc-search" &&
-                        stateMachine.getState.results.status === "loaded"
+                        stateAPI.state.stage === "doc-search" &&
+                        stateAPI.state.results.status === "loaded"
                     }
                 >
-                    <div class='flex flex-row-reverse justify-between w-full h-full'>
-                        <div class='flex flex-col w-[810px] gap-4 p-12'>
-                            <div class='flex flex-col gap-4 w-full'>
-                                <span class='text-zinc-100/50 text-sm font-bold pl-4'>
-                                    Most Relevant Results
-                                </span>
-                                <For
-                                    each={
-                                        stateMachine.getState["results"]
-                                            .similarDocs
-                                    }
-                                >
-                                    {(doc: UN_Document, index) => (
-                                        <Show
-                                            when={
-                                                doc.docID !==
-                                                stateMachine.getState[
-                                                    "docSearch"
-                                                ].docID
-                                            }
-                                        >
-                                            <UNDoc id={doc.docID} />
-                                        </Show>
-                                    )}
-                                </For>
+                    <>
+                        <HistoryNav />
+                        <div class='flex flex-row-reverse justify-between w-full h-full'>
+                            <div class='flex flex-col w-[810px] gap-4 p-12'>
+                                <div class='flex flex-col gap-4 w-full'>
+                                    <span class='text-zinc-100/50 text-sm font-bold pl-4'>
+                                        Most Relevant Results
+                                    </span>
+                                    <For
+                                        each={
+                                            stateAPI.state["results"]
+                                                .similarDocs
+                                        }
+                                    >
+                                        {(doc: UN_Document, index) => (
+                                            <Show
+                                                when={
+                                                    doc.docID !==
+                                                    stateAPI.state["docSearch"]
+                                                        .docID
+                                                }
+                                            >
+                                                <UNDoc id={doc.docID} />
+                                            </Show>
+                                        )}
+                                    </For>
+                                </div>
+                            </div>
+                            <div class='flex flex-col w-fit max-w-[400px] gap-4 bg-zinc-100/5 p-12 shadow-sm'>
+                                <h1 class='text-white text-lg flex flex-row gap-4 mb-8'>
+                                    <Radar class='size-7' /> Showing Results
+                                    Similar To
+                                </h1>
+                                <FullUNDoc
+                                    id={stateAPI.state["docSearch"].docID} // BUG: reactivity?
+                                />
                             </div>
                         </div>
-                        <div class='flex flex-col w-fit max-w-[400px] gap-4 bg-zinc-100/5 p-12 shadow-sm'>
-                            <h1 class='text-white text-lg flex flex-row gap-4 mb-8'>
-                                <Radar class='size-7' /> Showing Results Similar
-                                To
-                            </h1>
-                            <FullUNDoc
-                                id={stateMachine.getState["docSearch"].docID}
-                            />
-                        </div>
-                    </div>
+                    </>
                 </Match>
             </Switch>
         </section>
