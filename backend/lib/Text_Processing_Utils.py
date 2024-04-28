@@ -198,7 +198,7 @@ class table:
             new_query += word+" "
             
         
-        return tfidf_vectorizer.transform(new_query) #+ take into account this weight
+        return tfidf_vectorizer.transform([str(new_query),]) #+ take into account this weight
             
 
     def cossim(self,query:str) -> np.ndarray:
