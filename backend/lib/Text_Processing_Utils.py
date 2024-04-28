@@ -203,7 +203,7 @@ class table:
 
     def cossim(self,query:str) -> np.ndarray:
         # Returns an array, where array[n] represents the cosine similarity of the nth document
-        query_vec = self.vectorize_query(self, query)
+        query_vec = self.vectorize_query(query)
         matrix = csc_matrix(self.matrix)
 
         assert matrix.shape[1] == query_vec.shape[1]
@@ -227,7 +227,7 @@ class table:
     def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
         
-        query_vec = self.vectorize_query(self, query)
+        query_vec = self.vectorize_query(query)
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
             return None
 
