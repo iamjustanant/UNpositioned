@@ -15,12 +15,14 @@ from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.neighbors import NearestNeighbors
+# from sklearn.neighbors import NearestNeighbors
 
 import nltk
+
 # one-time downloads
-# nltk.download('stopwords')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt')
+
 from nltk.stem.porter import *
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 from nltk.corpus import stopwords
@@ -76,8 +78,8 @@ def fetch_table(sql_engine, table_name:str):
         df = df.drop('id', axis=1)
         df = df.reset_index(drop=True)
         df['id'] = df.index
-    
-    """"
+
+    """
     else:   # rep_docs
         (more processing if needed)
     """

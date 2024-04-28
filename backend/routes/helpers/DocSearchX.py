@@ -4,7 +4,7 @@
 # The function should return the most relevant tweets.
 # Of course, the first parameter provided is the SQL Engine itself, which lets you execute SQL queries on the database.
 
-from nltk.sentiment import SentimentIntensityAnalyzer
+# from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 # from lib.Utils import sparse_argsort
@@ -20,7 +20,7 @@ def doc_search_x_handler(text,limit):
     
     # Formatted output
     ttic = [
-      f"{id-1}|||{user} said: {tc}" 
+      f"{id}|||{user} said: {tc}" 
        for id, user, tc in x_table.df[['id', 'user_name', 'text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
     return ttic

@@ -23,7 +23,7 @@ LOCAL_MYSQL_DATABASE = "kardashiandb"
 mysql_engine = MySQLDatabaseHandler(LOCAL_MYSQL_USER,LOCAL_MYSQL_USER_PASSWORD,LOCAL_MYSQL_PORT,LOCAL_MYSQL_DATABASE)
 
 # load data (one-time)
-# mysql_engine.load_file_into_db()
+mysql_engine.load_file_into_db()
 
 # Create the Flask app
 app = Flask(__name__)
@@ -34,6 +34,16 @@ CORS(app)
 # Serve main frontend page
 @app.route("/")
 def base():
+    return send_from_directory('client/dist', 'index.html')
+
+# Serve about page
+@app.route("/about")
+def about():
+    return send_from_directory('client/dist', 'index.html')
+
+# Serve search page
+@app.route("/search")
+def search():
     return send_from_directory('client/dist', 'index.html')
 
 # Serve endpoints
@@ -48,7 +58,6 @@ def termsearch():
 def docsearch():
     queryDocID = parseInt(request.args.get("doc_id"))
     queryDocType = parseArg(request.args.get("doc_type"))
-    # desiredType = parseArg(request.args.get("type"))
     limit = parseInt(request.args.get("limit"))
     # return formatServerResponse(doc_search_handler(queryDocID,queryDocType,desiredType,limit))
     return formatServerResponse(doc_search_handler(queryDocID,queryDocType,limit))

@@ -4,7 +4,7 @@
 # The function should return the most relevant UN positions.
 # Of course, the first parameter provided is the SQL Engine itself, which lets you execute SQL queries on the database.
 
-from nltk.sentiment import SentimentIntensityAnalyzer
+# from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
 import pycountry
