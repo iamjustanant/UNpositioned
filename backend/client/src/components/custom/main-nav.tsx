@@ -9,6 +9,7 @@ export function MainNav(props: ComponentProps<"nav">) {
     const [, rest] = splitProps(props, ["class"]);
     return (
         <nav
+            id='navigation'
             class={cn(
                 "flex justify-between py-4 px-6 bg-zinc-800 text-white sticky border-y border-zinc-100/10",
                 props.class
