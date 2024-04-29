@@ -1,6 +1,6 @@
 import { BACKEND_URL } from "~/constants";
 import { buildURL } from "./utils";
-import { DocType, Document, FullDocument } from "./types";
+import { DocType, AnyDocument, FullDocument } from "./types";
 
 export type Endpoint = (
     | {
@@ -14,17 +14,17 @@ export type Endpoint = (
     | {
           // Gets you similar results of UN type given a document of any type
           name: "docsearch";
-          doc: Document;
+          doc: AnyDocument;
       }
     | {
           // Gets you the preview of a document of any type
           name: "getdocpreview";
-          doc: Document;
+          doc: AnyDocument;
       }
     | {
           // Gets you the full document of any type
           name: "getdoc";
-          doc: Document;
+          doc: AnyDocument;
       }
 ) & {
     limit?: number;

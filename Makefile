@@ -9,3 +9,6 @@ client-build:
 
 server-install:
 	cd backend && pip install -r requirements.txt
+
+clean-pickles:
+	rm -f backend/lib/*.pickle

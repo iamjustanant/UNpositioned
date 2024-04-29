@@ -10,5 +10,4 @@ def doc_search_handler(queryDocID,queryDocType,limit):
     elif queryDocType == 'rep':
         query = rep_table.df.loc[queryDocID]['text_content']
 
-    # print(query)
     return doc_search_un_handler(query, limit)
