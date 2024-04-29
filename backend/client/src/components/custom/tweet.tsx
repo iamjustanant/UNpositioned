@@ -10,7 +10,7 @@ import {
 import { Endpoint, fetcher } from "~/lib/fetch";
 import CustomLoader from "./loader";
 import { Button } from "../ui/button";
-import { Expand, Radar, TextSearch } from "lucide-solid";
+import { Check, Expand, Radar, TextSearch } from "lucide-solid";
 import { cn } from "~/lib/utils";
 import SimilarSearchBtn from "./search-for-similar";
 import { Tweetmeta } from "~/lib/parse";
@@ -43,6 +43,39 @@ const Tweet = (props: { id: string; type: "x" | "rep" }) => {
                             props.type === "x" ? "pt-8" : "pt-0"
                         )}
                     >
+                        <Show when={props.type === "x"}>
+                            <div class='flex w-full items-center justify-between'>
+                                <span class='flex flex-row items-center justify-start gap-2'>
+                                    <p class='text-sm text-muted-foreground'>
+                                        {
+                                            Tweetmeta(
+                                                data()[0].contents,
+                                                props.type
+                                            ).name
+                                        }
+                                    </p>
+                                    <Show
+                                        when={
+                                            Tweetmeta(
+                                                data()[0].contents,
+                                                props.type
+                                            ).verified
+                                        }
+                                    >
+                                        <Check class='w-4 h-4 text-sky-400' />
+                                    </Show>
+                                </span>
+                                <p class='text-sm text-muted-foreground'>
+                                    {
+                                        Tweetmeta(
+                                            data()[0].contents,
+                                            props.type
+                                        ).followers
+                                    }{" "}
+                                    Followers
+                                </p>
+                            </div>
+                        </Show>
                         <span class='flex size-2 translate-y-1 rounded-full bg-sky-500' />
                         <div class='space-y-3'>
                             <p class='text-sm font-medium'>
@@ -59,16 +92,6 @@ const Tweet = (props: { id: string; type: "x" | "rep" }) => {
                                             data()[0].contents,
                                             props.type
                                         ).platform
-                                    }
-                                </p>
-                            </Show>
-                            <Show when={props.type === "x"}>
-                                <p class='text-sm text-muted-foreground'>
-                                    {
-                                        Tweetmeta(
-                                            data()[0].contents,
-                                            props.type
-                                        ).name
                                     }
                                 </p>
                             </Show>

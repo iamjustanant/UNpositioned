@@ -19,6 +19,7 @@ def doc_search_rep_handler(text,limit):
     
     # Formatted output
     ttic = [
+      # ID, Audience, Bias Confidence, Bias, Author said on medium content
        f"{id}||| {aud} ||| {int(bc * 100)} ||| {b} ||| {author} said on {ms.upper()}: {tc}" 
        for id, aud, bc, b, ms, author, tc in  rep_table.df[['id', 'audience', 'bias_conf', 'bias', 
                                                             'media_source','author','text_content']].iloc
