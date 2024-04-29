@@ -17,8 +17,6 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 # from sklearn.neighbors import NearestNeighbors
 
-from collections import defaultdict
-
 import nltk
 
 # one-time downloads
@@ -29,32 +27,8 @@ from nltk.stem.porter import *
 from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
 from nltk.corpus import stopwords
 
-# Spellchecker
-from spellchecker import SpellChecker
-
 stopwords_set = set(stopwords.words('english'))
 ps = PorterStemmer()
-
-spell = SpellChecker()
-spell.word_frequency.load_dictionary('lib/en.json')
-
-# loading the dictionary filled with similarity scores for words in the query
-with open('pickle_dict','rb') as file:
-    pickled_dict = pickle.load(file)
-inv_pickled_dict = invert_nested_dict(pickled_dict)
-
-
-
-def invert_nested_dict(nested_dictionary):
-    """
-    inverts the indexes of a nested dictionary, using the keys from the nested dictionary
-    as the new keys, and puts the inverted values in a
-    """
-    inv_pickled_dict = defaultdict(list)  
-    for outer_key, inner_dict in nested_dictionary.items():
-        for inner_key in inner_dict.keys():
-            inv_pickled_dict[inner_key].append(outer_key)  
-    return dict(inv_pickled_dict)  
 
 def fetch_table(sql_engine, table_name:str):
     """
@@ -163,43 +137,17 @@ class table:
             with open('lib/'+table_name+'_vt.pickle','wb') as file:
                 pickle.dump(self.svd_vt,file)
 
-
+    """
     def vectorize_query(self,query:str):
         #TODO: Put in Spellchecker
         #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
         #DICT Key: token
         #Value diction
-        query_list = list(nltk.tokenize(query))
-        word_check = spell.unknown(query_list)
-        new_query = ""
 
-        for word in word_check:
-            if type(spell.correction(word)) == str:
-                query_list = [w.replace(word, spell.correction(word)) for w in query_list]
-
-        for token in query_list:
-            new_token = query_fixer(token)
-            if ((new_token != token) & (new_token != None)):
-                query_list = [w.replace(token, new_token) for w in query_list]
-
-        for word in query_list:
-            new_query += word+" "
-            
-        
-        return tfidf_vectorizer.transform(new_query) #+ take into account this weight
-
-    def query_fixer(token, counter=0):
-        count = counter
-        if ((count - 1) >= len(inv_pickled_dict[token])):
-            return None
-        if token in set(tfidf_vectorizer.get_feature_names_out()):
-            return token
-        else:
-            if inv_pickled_dict[token][count] in set(tfidf_vectorizer.get_feature_names_out()):
-                return inv_pickled_dict[token][count]
-            else:
-                return query_fixer(token, count+1)
-            
+        #Only use words that are in the 
+        raise NotImplementedError
+        # return tfidf_vectorizer.transform(query) + take into account this weight
+    """
 
     def cossim(self,query:str) -> np.ndarray:
         # Returns an array, where array[n] represents the cosine similarity of the nth document
