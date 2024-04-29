@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/sheet";
 import Highlighter from "./highlighter";
 import SimilarSearchBtn from "./search-for-similar";
-import FullUNDoc from "./full-doc";
+import FullDoc from "./full-doc";
 import { UNmeta } from "~/lib/parse";
 
 const UNDoc = (props: { id: string; currentQuery?: string }) => {
@@ -67,7 +67,7 @@ const UNDoc = (props: { id: string; currentQuery?: string }) => {
                             </Button>
                         </SheetTrigger>
                         <SheetContent class='w-3/5 bg-zinc-900/90 text-white border-none'>
-                            <FullUNDoc id={previewData()[0].docID} />
+                            <FullDoc id={previewData()[0].docID} />
                         </SheetContent>
                     </Sheet>
 

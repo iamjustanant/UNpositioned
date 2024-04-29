@@ -9,9 +9,9 @@ export default function About() {
                 <h1 class='text-6xl text-white w-fit font-medium'>About</h1>
                 <p class='text-md text-white font-mono'>
                     <b class='underline-offset-4'>Authors</b> <br />
-                    Bingsong Lee, Anthony Huang,
+                    Bingsong Lee, Juan De Maqua,
                     <br />
-                    Daniel Wei, Juan De Maqua
+                    Daniel Wei, Anthony Huang
                 </p>
                 <p class='text-md text-white font-mono'>
                     <b class='underline-offset-4'>Developed for</b> <br />
@@ -20,9 +20,9 @@ export default function About() {
                 </p>
                 <p class='text-md text-white font-mono'>
                     <b class='underline-offset-4'>Created with</b> <br />
-                    Python, Pandas, Flask,
+                    Python, MySQL,
                     <br />
-                    MySQL, Solid.js, Tailwind CSS.
+                    Solid.js, Tailwind CSS.
                 </p>
             </div>
         </div>

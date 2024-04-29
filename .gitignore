@@ -22,3 +22,5 @@ helpers/*
 .python-version
 backend/lib/data_exainer_temporary.ipynb
 backend/data_exainer_temporary.ipynb
+
+*.pickle

@@ -11,8 +11,8 @@ export default function Home() {
                 <div class='relative h-full bg-muted p-10 text-white dark:border-r flex flex-col md:justify-between'>
                     <div class='absolute inset-0 bg-zinc-900 background-dots' />
                     <div class='relative z-20 flex items-center text-xl font-medium'>
-                        <Landmark class='mr-2 size-6' />
-                        Unpositioned
+                        <Landmark class='mr-2 size-7' />
+                        UNpositioned
                     </div>
                     <div class='relative z-20 w-full flex flex-row justify-between'>
                         <div class='flex flex-col gap-12'>
