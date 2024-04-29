@@ -54,7 +54,7 @@ def fetch_table(sql_engine, table_name:str):
         df['text_content'] = df['text_content'].apply(sent_tokenize)
         df = df.explode('text_content').reset_index(names='paragraph_index')
         
-        # clean 
+        # remove very short entries
         df = df[df['text_content'].str.len() >= 30]
 
     elif table_name == 'x_docs':
@@ -110,7 +110,7 @@ class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
 
-    def __init__(self, sql_engine, table_name:str,df, k = 100):
+    def __init__(self, table_name:str,df, k = 100):
 
         def open_pickle_if_present(filename:str):
             if os.path.isfile('lib/' + self.table_name + '_' + filename + '.pickle'):
@@ -212,6 +212,6 @@ def init_tables(sql_engine):
     #Initialize tables
     #original min_df: 0.00005
     #NOTE: these parameters are manually optimized
-    un_table = table(sql_engine,'un_docs',un_df,k=30)
-    x_table = table(sql_engine,'x_docs',x_df, k=30)
-    rep_table = table(sql_engine,'rep_docs',rep_df, k=30)
+    un_table = table('un_docs',un_df,k=30)
+    x_table = table('x_docs',x_df, k=30)
+    rep_table = table('rep_docs',rep_df, k=30)
