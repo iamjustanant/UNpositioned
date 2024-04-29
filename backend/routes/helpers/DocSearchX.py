@@ -10,6 +10,8 @@ import numpy as np
 # from lib.Utils import sparse_argsort
 
 
+
+
 def doc_search_x_handler(text,limit):
   from lib.Text_Processing_Utils import x_table
 
@@ -20,8 +22,10 @@ def doc_search_x_handler(text,limit):
     
     # Formatted output
     ttic = [
-      f"{id}|||{user} said: {tc}" 
-       for id, user, tc in x_table.df[['id', 'user_name', 'text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
+      f"{id}||| {int(flw)} ||| {bool(ver)} ||| {user} said: {tc}" 
+       for id, flw, ver, user, tc in x_table.df[['id', 'followers', 'verified', 
+                                                 'user_name', 'text_content']].iloc
+                                                 [np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
     return ttic
   

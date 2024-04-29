@@ -1,4 +1,4 @@
-from routes.helpers.DocSearchUN import country_map
+# from routes.helpers.DocSearchUN import country_map
 
 def doc_get_handler(queryDocID,queryDocType):
   #TODO: Implement this function to return the FULL document with the given ID and type
@@ -9,7 +9,7 @@ def doc_get_handler(queryDocID,queryDocType):
     country, year, tc = row[['country','year_created','text_content']]
     paragraph = " ".join(un_table.df[un_table.df['paragraph_index'] == row['paragraph_index']]['text_content'].values)
     ttic = [
-       f"In {year}, {country_map(country).upper()} said: {paragraph}" 
+       f"In {year}, {country} said: {paragraph}" 
     ]
     return ttic
     
