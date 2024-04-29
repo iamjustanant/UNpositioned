@@ -28,7 +28,7 @@ import { Separator } from "~/components/ui/separator";
 import UNDoc from "~/components/custom/un-doc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Tweet from "~/components/custom/tweet";
-import FullUNDoc from "~/components/custom/full-doc";
+import FullDoc from "~/components/custom/full-doc";
 import stateAPI from "~/lib/state-engine";
 import { HistoryNav } from "~/components/custom/history-nav";
 
@@ -178,8 +178,9 @@ export default function Search() {
                                     <Radar class='size-7' /> Showing Results
                                     Similar To
                                 </h1>
-                                <FullUNDoc
+                                <FullDoc
                                     id={stateAPI.state["docSearch"].docID} // BUG: reactivity?
+                                    type={stateAPI.state["docSearch"].docType}
                                 />
                             </div>
                         </div>
