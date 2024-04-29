@@ -10,6 +10,7 @@ def doc_search_x_handler(text,limit):
     
     # Formatted output
     ttic = [
+      # ID, Followers, Verified, User Name, Text Content
       f"{id}||| {int(flw)} ||| {bool(ver)} ||| {user} said: {tc}" 
        for id, flw, ver, user, tc in x_table.df[['id', 'followers', 'verified', 
                                                  'user_name', 'text_content']].iloc
