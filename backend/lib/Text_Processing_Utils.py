@@ -1,21 +1,14 @@
 import numpy as np
 import pandas as pd
 import re
-import json
 import os
 import pickle
 
-# Objectives for search:
-# Search entire phrases smartly
-# Faster search
-
-from scipy.spatial import distance
-from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
+from scipy.sparse import linalg, csc_matrix
 
 from sklearn.preprocessing import normalize
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-# from sklearn.neighbors import NearestNeighbors
 
 import nltk
 
@@ -24,11 +17,24 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 from nltk.stem.porter import *
-from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
+from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 
 stopwords_set = set(stopwords.words('english'))
 ps = PorterStemmer()
+
+import pycountry
+
+countries = list(pycountry.countries)
+country_alpha3_list = [country.alpha_3 for country in countries]
+
+def country_map(alpha_3):
+    try:
+        country = pycountry.countries.get(alpha_3=alpha_3)
+        return country.name.upper()
+    except AttributeError:
+        return 'Unknown country'
+
 
 def fetch_table(sql_engine, table_name:str):
     """
@@ -39,52 +45,59 @@ def fetch_table(sql_engine, table_name:str):
     df.columns = data.keys()
 
     if table_name == 'un_docs':
+        # REMOVE UNKNOWN COUNTRIES
+        df = df[df['country'].isin(country_alpha3_list)]
+        # Full country names
+        df['country'] = df['country'].apply(country_map)
+
         #exploding by sentence
         df['text_content'] = df['text_content'].apply(sent_tokenize)
         df = df.explode('text_content').reset_index(names='paragraph_index')
         
-        # clean 
+        # remove very short entries
         df = df[df['text_content'].str.len() >= 30]
 
-        df['text_content'] = df['text_content'].str.replace(r'\s+', ' ', regex=True) # remove spaces
-
-        # remove nextlines
-        df['text_content'] = df['text_content'].str.replace('\n',' ') 
-        df['text_content'] = df['text_content'].str.replace('\x0c',' ')
-
-        df = df[df['text_content'].str.len() >= 5]
-
-        # typing
-        df['text_content'] = df['text_content'].astype('str')
-        df['sess'] = df['sess'].astype('int')
-        df['year_created'] = df['year_created'].astype('int')
-        df['country'] = df['country'].astype('str')
-
-        # truncate (?)
-        df = df[df['year_created'] >= 2007]
-
-        # reset index
-        df = df.drop('id', axis=1)
-        df = df.reset_index(drop=True)
-        df['id'] = df.index
-                
     elif table_name == 'x_docs':
         # remove dupes
         df['dup'] = df['text_content'].apply(lambda x: x.split(' https')[0])
         df = df.drop_duplicates(subset=['dup'])
         df = df.drop('dup', axis=1)
 
-        # reset index
-        df = df.drop('id', axis=1)
-        df = df.reset_index(drop=True)
-        df['id'] = df.index
+        # remove excessively long documents
+        df = df[df['text_content'].str.len() < 600]
 
-    """
+        # remove non-ascii characters
+        df['user_name'] = df['user_name'].apply(lambda string: re.sub(r"\b([^\s]+)\\([^\s]+)\b",r'\1', \
+                                                                        str(string.encode('ascii', 'ignore'), 'ascii')))
     else:   # rep_docs
-        (more processing)
-    """
+        # remove excessively long documents
+        df = df[df['text_content'].str.len() < 600]
+
+        # single quotes
+        df['author'] = df['author'].str.replace('&#x27;', "'")
+    
+    
+    # more cleaning
+    df['text_content'] = df['text_content'].str.replace(r'\s+', ' ', regex=True) # remove spaces
+
+    # remove nextlines
+    df['text_content'] = df['text_content'].str.replace('\n',' ') 
+    df['text_content'] = df['text_content'].str.replace('\x0c',' ')
+    
+    # remove non-ascii characters
+    df['text_content'] = df['text_content'].apply(lambda string: re.sub(r"\b([^\s]+)\\([^\s]+)\b",r'\1', \
+                                                                        str(string.encode('ascii', 'ignore'), 'ascii')))
+    
+    # fix amperstands
+    df['text_content'] = df['text_content'].str.replace('&amp;','&')
+
+    # reset index
+    df = df.drop('id', axis=1)
+    df = df.reset_index(drop=True)
+    df['id'] = df.index
 
     return df
+
 
 def tokenize_stem_words(words:str): # CAN BE MORE EFFICIENT (?)
     """
@@ -97,11 +110,11 @@ class table:
     # NOTE: you should pass your own value for `min_df` and `max_df`
     #see https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html
 
-    def __init__(self, sql_engine, table_name:str,df, k = 100):
+    def __init__(self, table_name:str,df, k = 100):
 
         def open_pickle_if_present(filename:str):
-            if os.path.isfile(self.table_name + '_' + filename + '.pickle'):
-                with open(self.table_name + '_' + filename + '.pickle','rb') as file:
+            if os.path.isfile('lib/' + self.table_name + '_' + filename + '.pickle'):
+                with open('lib/' + self.table_name + '_' + filename + '.pickle','rb') as file:
                     data = pickle.load(file)
                 return data
             else:
@@ -118,8 +131,9 @@ class table:
 
         if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:  #if any file is absent
             #Initialize tfidf matrix
+            print("Initializing Matrices...")
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
-            self.matrix = normalize(self.matrix, axis = 1)
+            # self.matrix = normalize(self.matrix, axis = 1)
             with open('lib/'+table_name+'_matrix.pickle','wb') as file:
                 pickle.dump(self.matrix,file)
 
@@ -135,18 +149,6 @@ class table:
                 pickle.dump(self.svd_s,file)
             with open('lib/'+table_name+'_vt.pickle','wb') as file:
                 pickle.dump(self.svd_vt,file)
-
-    """
-    def vectorize_query(self,query:str):
-        #TODO: Put in Spellchecker
-        #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
-        #DICT Key: token
-        #Value diction
-
-        #Only use words that are in the 
-        raise NotImplementedError
-        # return tfidf_vectorizer.transform(query) + take into account this weight
-    """
 
     def cossim(self,query:str) -> np.ndarray:
         # Returns an array, where array[n] represents the cosine similarity of the nth document
@@ -165,11 +167,6 @@ class table:
             return None
         else:
             return cosine_similarity(matrix,query_vec.reshape(1,-1)).flatten()
-    """
-        return np.array([cosine_similarity(matrix[doc_index,:],query_vec) 
-                        if not np.sum(matrix[doc_index,:]) == 0 else 0 
-                        for doc_index in range(0,matrix.shape[0])])
-    """
 
     def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
@@ -186,23 +183,6 @@ class table:
         #we also slightly incentivize articles with the exact (stemmed wording)
         return np.multiply(self.svd_u.dot(svd_vec),(boolean_search_results * boolean_incentive) + 1)
     
-    #big fail
-    """
-    def neighbors(self, query, limit):
-        knn = NearestNeighbors(n_neighbors=limit, algorithm='auto', metric='cosine')
-        knn.fit(self.matrix)
-        
-        query_vec = tfidf_vectorizer.transform([query])
-        distances, indices = knn.kneighbors(query_vec)
-
-        ret = []
-        text_col = self.df['text_content']
-        for i in range(len(indices[0])):
-            ret.append(text_col[indices[0][i]])
-
-        return ret
-    """
-
 
 def init_tables(sql_engine):
     #Fetch from SQL Database
@@ -215,8 +195,6 @@ def init_tables(sql_engine):
     if os.path.isfile('lib/tfidf_vectorizer.pickle'): #open file if present
         with open('lib/tfidf_vectorizer.pickle','rb') as file:
             tfidf_vectorizer = pickle.load(file)
-        with open('lib/wordlist.pickle','wb') as file:
-            pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
     else:
         print("First-Time Initialization. This may take a minute or two...")
 
@@ -228,14 +206,12 @@ def init_tables(sql_engine):
                     )
         tfidf_vectorizer = tfidf_vectorizer.fit(pd.concat((un_df['text_content'],x_df['text_content'],rep_df['text_content'])))
 
-    with open('lib/tfidf_vectorizer.pickle','wb') as file:
-        pickle.dump(tfidf_vectorizer, file)
-    with open('lib/wordlist.pickle','wb') as file:
-        pickle.dump(list(tfidf_vectorizer.get_feature_names_out()), file)
+        with open('lib/tfidf_vectorizer.pickle','wb') as file:
+            pickle.dump(tfidf_vectorizer, file)
 
     #Initialize tables
     #original min_df: 0.00005
     #NOTE: these parameters are manually optimized
-    un_table = table(sql_engine,'un_docs',un_df,k=30)
-    x_table = table(sql_engine,'x_docs',x_df, k=30)
-    rep_table = table(sql_engine,'rep_docs',rep_df, k=30)
+    un_table = table('un_docs',un_df,k=30)
+    x_table = table('x_docs',x_df, k=30)
+    rep_table = table('rep_docs',rep_df, k=30)
