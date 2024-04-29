@@ -12,6 +12,8 @@ def parseInt(v):
   return int(v)
 
 def parseArg(str):
+  if str is None:
+        return ""
   return str.replace("+"," ")
 
 def sparse_argsort(arr:np.ndarray): #argsort while excluding zeros

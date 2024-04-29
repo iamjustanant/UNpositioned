@@ -39,7 +39,7 @@ spell = SpellChecker()
 spell.word_frequency.load_dictionary('lib/en.json')
 
 # loading the dictionary filled with similarity scores for words in the query
-with open('lib/pickle_dict','rb') as file:
+with open('lib/pickle_dict_lc','rb') as file:
     pickled_dict = pickle.load(file)
 
 
@@ -187,14 +187,12 @@ class table:
 
         for word in word_check:
             if type(spell.correction(word)) == str:
-                print(query_list)
                 query_list = [w.replace(word, spell.correction(word)) for w in query_list]
-            
 
-        # for token in query_list:
-        #     new_token = self.query_fixer(token)
-        #     if ((new_token != token) & (new_token != None)):
-        #         query_list = [w.replace(token, new_token) for w in query_list]
+        for token in query_list:
+            new_token = self.query_fixer(token)
+            if ((new_token != token) & (new_token != None)):
+                query_list = [w.replace(token, new_token) for w in query_list]
 
         for word in query_list:
             new_query += word+" "
@@ -209,7 +207,7 @@ class table:
         matrix = csc_matrix(self.matrix)
 
         assert matrix.shape[1] == query_vec.shape[1]
-        query_vec = query_vec.flatten()
+        query_vec = query_vec.toarray().flatten()
 
         relevant_terms = np.nonzero(query_vec)[0]
 
@@ -230,11 +228,11 @@ class table:
         #vectorize query:
         
         query_vec = self.vectorize_query(query)
-        if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
+        if np.array_equal(query_vec.toarray(), np.zeros(shape = query_vec.shape)): 
             return None
 
         # Returns an array, where array[n] represents the cosine similarity of the nth document
-        svd_vec = normalize(np.dot(query_vec, self.svd_vt.T)).squeeze()
+        svd_vec = normalize(np.dot(query_vec.toarray(), self.svd_vt.T)).squeeze()
 
         #optional boolean search weight
         boolean_search_results = self.df['text_content'].str.lower().str.contains(query).values
