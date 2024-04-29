@@ -1,4 +1,10 @@
-import { Landmark, Redo2, Undo2 } from "lucide-solid";
+import {
+    CircleChevronUp,
+    Landmark,
+    Redo2,
+    RotateCcw,
+    Undo2,
+} from "lucide-solid";
 import type { ComponentProps } from "solid-js";
 import { For, Show, createSignal, splitProps } from "solid-js";
 import {
@@ -24,13 +30,23 @@ export function HistoryNav(props: ComponentProps<"div">) {
             )}
             {...rest}
         >
-            <Button
+            {/* <Button
                 onClick={stateAPI.goBack}
                 disabled={!stateAPI.canGoBack}
                 class='bg-zinc-100/5 rounded-none hover:bg-zinc-100/10 text-zinc-100 hover:text-zinc-100 flex flex-row gap-2'
             >
                 <Undo2 class='size-5' />
                 <span>Back</span>
+            </Button> */}
+            <Button
+                onClick={(e) => {
+                    e.preventDefault();
+                    window.location.reload();
+                }}
+                class='text-sm bg-zinc-100/5 rounded-none hover:bg-zinc-100/10 text-zinc-100 hover:text-zinc-100 flex flex-row gap-2'
+            >
+                <RotateCcw class='size-4' />
+                <span>Restart</span>
             </Button>
             <div class='flex flex-row gap-2 items-center bg-zinc-100/5 pl-4'>
                 <span>Limit to </span>
@@ -59,14 +75,13 @@ export function HistoryNav(props: ComponentProps<"div">) {
                     </Button>
                 </Show>
             </div>
-            <Button
-                onClick={stateAPI.goForward}
-                disabled={!stateAPI.canGoForward}
-                class='bg-zinc-100/5 rounded-none hover:bg-zinc-100/10 text-zinc-100 hover:text-zinc-100 flex flex-row gap-2'
+            <a
+                href='#navigation'
+                class='text-sm bg-zinc-100/5 rounded-none hover:bg-zinc-100/10 text-zinc-100 hover:text-zinc-100 flex flex-row gap-2 px-3 items-center'
             >
-                <Redo2 class='size-5' />
-                <span>Redo</span>
-            </Button>
+                <CircleChevronUp class='size-4' />
+                <span>Back to Top</span>
+            </a>
         </div>
     );
 }
