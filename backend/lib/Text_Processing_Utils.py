@@ -10,12 +10,14 @@ import pickle
 # Faster search
 
 from scipy.spatial import distance
-from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
+from scipy.sparse import linalg, csc_matrix, csr_matrix
 
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 # from sklearn.neighbors import NearestNeighbors
+
+from collections import defaultdict
 
 import nltk
 
@@ -24,11 +26,35 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 from nltk.stem.porter import *
-from nltk.tokenize import sent_tokenize, TreebankWordTokenizer
+from nltk.tokenize import sent_tokenize, TreebankWordTokenizer, word_tokenize
 from nltk.corpus import stopwords
+
+# Spellchecker
+from spellchecker import SpellChecker
 
 stopwords_set = set(stopwords.words('english'))
 ps = PorterStemmer()
+
+spell = SpellChecker()
+spell.word_frequency.load_dictionary('lib/en.json')
+
+# loading the dictionary filled with similarity scores for words in the query
+with open('lib/pickle_dict','rb') as file:
+    pickled_dict = pickle.load(file)
+
+
+def invert_nested_dict(nested_dictionary):
+    """
+    inverts the indexes of a nested dictionary, using the keys from the nested dictionary
+    as the new keys, and puts the inverted values in a
+    """
+    inv_pickled_dict = defaultdict(list)  
+    for outer_key, inner_dict in nested_dictionary.items():
+        for inner_key in inner_dict.keys():
+            inv_pickled_dict[inner_key].append(outer_key)  
+    return dict(inv_pickled_dict)  
+
+inv_pickled_dict = invert_nested_dict(pickled_dict)
 
 def fetch_table(sql_engine, table_name:str):
     """
@@ -100,8 +126,8 @@ class table:
     def __init__(self, sql_engine, table_name:str,df, k = 100):
 
         def open_pickle_if_present(filename:str):
-            if os.path.isfile(self.table_name + '_' + filename + '.pickle'):
-                with open(self.table_name + '_' + filename + '.pickle','rb') as file:
+            if os.path.isfile('lib/'+self.table_name + '_' + filename + '.pickle'):
+                with open('lib/'+self.table_name + '_' + filename + '.pickle','rb') as file:
                     data = pickle.load(file)
                 return data
             else:
@@ -118,6 +144,7 @@ class table:
 
         if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:  #if any file is absent
             #Initialize tfidf matrix
+            print("Initializing Matrices...")
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
             self.matrix = normalize(self.matrix, axis = 1)
             with open('lib/'+table_name+'_matrix.pickle','wb') as file:
@@ -136,21 +163,49 @@ class table:
             with open('lib/'+table_name+'_vt.pickle','wb') as file:
                 pickle.dump(self.svd_vt,file)
 
-    """
+
+    def query_fixer(self, token, counter=0):
+            count = counter
+            if ((count - 1) >= len(inv_pickled_dict[token])):
+                return None
+            if token in set(tfidf_vectorizer.get_feature_names_out()):
+                return token
+            else:
+                if inv_pickled_dict[token][count] in set(tfidf_vectorizer.get_feature_names_out()):
+                    return inv_pickled_dict[token][count]
+                else:
+                    return self.query_fixer(token, count+1)
+
     def vectorize_query(self,query:str):
         #TODO: Put in Spellchecker
         #TODO: JUAN PUT vec2querry; str -> list[(str, weight),]
         #DICT Key: token
         #Value diction
+        query_list = list(word_tokenize(query))
+        word_check = spell.unknown(query_list)
+        new_query = ""
 
-        #Only use words that are in the 
-        raise NotImplementedError
-        # return tfidf_vectorizer.transform(query) + take into account this weight
-    """
+        for word in word_check:
+            if type(spell.correction(word)) == str:
+                print(query_list)
+                query_list = [w.replace(word, spell.correction(word)) for w in query_list]
+            
+
+        # for token in query_list:
+        #     new_token = self.query_fixer(token)
+        #     if ((new_token != token) & (new_token != None)):
+        #         query_list = [w.replace(token, new_token) for w in query_list]
+
+        for word in query_list:
+            new_query += word+" "
+            
+        
+        return tfidf_vectorizer.transform([str(new_query),]) #+ take into account this weight
+            
 
     def cossim(self,query:str) -> np.ndarray:
         # Returns an array, where array[n] represents the cosine similarity of the nth document
-        query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
+        query_vec = self.vectorize_query(query)
         matrix = csc_matrix(self.matrix)
 
         assert matrix.shape[1] == query_vec.shape[1]
@@ -173,7 +228,8 @@ class table:
 
     def svd_cossim(self, query:str, boolean_incentive = 1) -> np.ndarray:
         #vectorize query:
-        query_vec = tfidf_vectorizer.transform([str(query),]).toarray()
+        
+        query_vec = self.vectorize_query(query)
         if np.array_equal(query_vec, np.zeros(shape = query_vec.shape)): 
             return None
 
