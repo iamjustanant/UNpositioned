@@ -11,14 +11,40 @@ export const UNmeta = (contents: string) => {
 export const Tweetmeta = (contents: string, type: "x" | "rep") => {
     switch (type) {
         case "x":
-            const firstLast = contents
-                .substring(0, contents.indexOf(":") - 5)
+            const [ignore0, followersSec, verifiedSec, userSaidWhatSec] =
+                contents.split("|||").map((x) => x.trim());
+
+            // Parse numbers
+            const numFollowers = parseInt(followersSec);
+            const isVerified = verifiedSec === "true";
+
+            // Parse the rest
+            const firstLast = userSaidWhatSec
+                .substring(0, userSaidWhatSec.indexOf(":") - 5)
                 .trim();
-            const actualTwt = contents.substring(contents.indexOf(":") + 1);
-            return { name: firstLast, remaining: actualTwt };
+            const actualTwt = userSaidWhatSec.substring(
+                userSaidWhatSec.indexOf(":") + 1
+            );
+
+            // Return
+            return {
+                name: firstLast,
+                remaining: actualTwt,
+                followers: numFollowers,
+                verified: isVerified,
+            };
         case "rep":
-            const firstPart = contents.substring(0, contents.indexOf(":"));
-            const name = firstPart.substring(0, contents.indexOf("(")).trim();
+            const [ignore1, ignore2, biasConfidence, bias, rest] = contents
+                .split("|||")
+                .map((x) => x.trim());
+
+            // Parse bias info
+            const biasConfidenceNum = parseInt(biasConfidence);
+            const biasStr = bias;
+
+            // Parse the rest
+            const firstPart = rest.substring(0, rest.indexOf(":"));
+            const name = firstPart.substring(0, rest.indexOf("(")).trim();
             const position = firstPart.substring(
                 firstPart.indexOf("(") + 1,
                 firstPart.indexOf(")")
@@ -26,7 +52,16 @@ export const Tweetmeta = (contents: string, type: "x" | "rep") => {
             const platform = firstPart.substring(
                 firstPart.lastIndexOf(" ") + 1
             );
-            const remaining = contents.substring(contents.indexOf(":") + 1);
-            return { name, position, platform, remaining };
+            const remaining = rest.substring(rest.indexOf(":") + 1);
+
+            // Return
+            return {
+                name,
+                position,
+                platform,
+                remaining,
+                biasConfidenceNum,
+                biasStr,
+            };
     }
 };
