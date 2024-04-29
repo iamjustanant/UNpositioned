@@ -1,4 +1,4 @@
-from routes.helpers.DocSearchUN import country_map
+# from routes.helpers.DocSearchUN import country_map
 from routes.DocGetHandler import doc_get_handler
 
 def doc_preview_handler(queryDocID,queryDocType):
@@ -9,7 +9,7 @@ def doc_preview_handler(queryDocID,queryDocType):
     row = un_table.df.loc[queryDocID]
     country, year, tc = row[['country','year_created','text_content']]
     ttic = [
-       f"In {year}, {country_map(country).upper()} said: {tc}" 
+       f"In {year}, {country} said: {tc}" 
     ]
     return ttic
   

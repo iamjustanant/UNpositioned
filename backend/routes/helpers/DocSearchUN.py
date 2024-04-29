@@ -7,15 +7,15 @@
 # from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import numpy as np
-import pycountry
+# import pycountry
 # from lib.Utils import sparse_argsort
 
-def country_map(alpha_3):
-    try:
-        country = pycountry.countries.get(alpha_3=alpha_3)
-        return country.name
-    except AttributeError:
-        return 'Unknown country'
+# def country_map(alpha_3):
+#     try:
+#         country = pycountry.countries.get(alpha_3=alpha_3)
+#         return country.name
+#     except AttributeError:
+#         return 'Unknown country'
 
 def doc_search_un_handler(text,limit):
   from lib.Text_Processing_Utils import un_table
@@ -27,8 +27,9 @@ def doc_search_un_handler(text,limit):
   if svd_results is not None and cossim_results is not None:
     # Formatted output
     ttic = [
-       f"{id}|||In {year}, {country_map(country).upper()} said: {tc}" 
-       for id, country, year, tc in un_table.df[['id','country','year_created','text_content']].iloc[np.lexsort((svd_results,cossim_results))][::-1][:limit].values
+       f"{id}|||In {year}, {country} said: {tc}" 
+       for id, country, year, tc in un_table.df[['id','country','year_created','text_content']].iloc
+       [np.lexsort((svd_results,cossim_results))][::-1][:limit].values
     ]
     return ttic
   
