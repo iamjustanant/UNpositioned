@@ -2,8 +2,13 @@ import { Radar } from "lucide-solid";
 import { Button } from "../ui/button";
 import stateAPI from "~/lib/state-engine";
 import { AnyDocument } from "~/lib/types";
+import { createEffect } from "solid-js";
 
 const SimilarSearchBtn = (props: { currentDoc: AnyDocument }) => {
+    createEffect(() => {
+        console.log("SEARCHING FOR SIMILAR TO: ", props.currentDoc);
+    });
+
     return (
         <Button
             onClick={() => stateAPI.makeDocSearch(props.currentDoc)}
