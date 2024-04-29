@@ -1,7 +1,4 @@
-# from routes.helpers.DocSearchUN import country_map
-
 def doc_get_handler(queryDocID,queryDocType):
-  #TODO: Implement this function to return the FULL document with the given ID and type
   from lib.Text_Processing_Utils import un_table, x_table, rep_table
 
   if queryDocType == 'un':
@@ -15,17 +12,17 @@ def doc_get_handler(queryDocID,queryDocType):
     
   elif queryDocType == 'x':
     row = x_table.df.loc[queryDocID]
-    user, tc = row[['user_name', 'text_content']]
+    id, flw, ver, user, tc = row[['id', 'followers', 'verified', 'user_name', 'text_content']]
     ttic = [
-      f"{user} said: {tc}" 
+      f"{id}||| {int(flw)} ||| {bool(ver)} ||| {user} said: {tc}"
     ]
     return ttic
   
   elif queryDocType == 'rep':
     row = rep_table.df.loc[queryDocID]
-    ms, author, tc = row[['media_source','author','text_content']]
+    id, aud, bc, b, ms, author, tc = row[['id', 'audience', 'bias_conf', 'bias', 'media_source','author','text_content']]
     ttic = [
-       f"{author} said on {ms.upper()}: {tc}" 
+       f"{id}||| {aud} ||| {int(bc * 100)} ||| {b} ||| {author} said on {ms.upper()}: {tc}" 
     ]
     return ttic
   
