@@ -10,7 +10,7 @@ import pickle
 # Faster search
 
 from scipy.spatial import distance
-from scipy.sparse import linalg, csc_matrix, csr_matrix
+from scipy.sparse import linalg, csc_matrix, csr_matrix, save_npz
 
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -100,8 +100,8 @@ class table:
     def __init__(self, sql_engine, table_name:str,df, k = 100):
 
         def open_pickle_if_present(filename:str):
-            if os.path.isfile('lib/'+self.table_name + '_' + filename + '.pickle'):
-                with open('lib/'+self.table_name + '_' + filename + '.pickle','rb') as file:
+            if os.path.isfile(self.table_name + '_' + filename + '.pickle'):
+                with open(self.table_name + '_' + filename + '.pickle','rb') as file:
                     data = pickle.load(file)
                 return data
             else:
@@ -118,7 +118,6 @@ class table:
 
         if self.svd_u is None or self.svd_s is None or self.svd_vt is None or self.matrix is None:  #if any file is absent
             #Initialize tfidf matrix
-            print("Initializing Matrices...")
             self.matrix = tfidf_vectorizer.transform(self.df['text_content'])
             self.matrix = normalize(self.matrix, axis = 1)
             with open('lib/'+table_name+'_matrix.pickle','wb') as file:
