@@ -13,8 +13,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import nltk
 
 # one-time downloads
-# nltk.download('stopwords')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt')
 
 from nltk.stem.porter import *
 from nltk.tokenize import sent_tokenize
