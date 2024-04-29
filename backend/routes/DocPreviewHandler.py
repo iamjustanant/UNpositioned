@@ -1,8 +1,6 @@
-# from routes.helpers.DocSearchUN import country_map
 from routes.DocGetHandler import doc_get_handler
 
 def doc_preview_handler(queryDocID,queryDocType):
-  #TODO: Implement this function to return a PREVIEW of the document with the given ID and type (probably just the most relevant sentence)
   from lib.Text_Processing_Utils import un_table
 
   if queryDocType == 'un':
